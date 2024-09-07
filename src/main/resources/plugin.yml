@@ -1,0 +1,44 @@
+name: BlockDisplayEditor
+version: '1.0'
+main: me.krem.blockDisplayEditor.BlockDisplayEditor
+api-version: '1.21'
+authors: [ Krem ]
+description: Edit block displays easily with custom tools !
+
+commands:
+  bde:
+    description: "Use the Block Display Editor plugin"
+    aliases: [blockdisplayeditor]
+    usage: "/bde [create/delete/tools/info]"
+    permission: bde.bde
+
+# You shouldn't touch this section unless you know what you're doing.
+permissions:
+  bde.*:
+    description: Grants access to every BDE command.
+    children:
+      bde.create: true
+      bde.delete: true
+      bde.tools: true
+      bde.info: true
+      bde.bde: true
+
+  bde.bde:
+    default: false
+    description: Access /bde
+
+  bde.create:
+    default: false
+    description: Allows to create block displays
+
+  bde.delete:
+    default: false
+    description: Allows to delete block displays
+
+  bde.tools:
+    default: false
+    description: Allows to get AND use the BDE set of tools to edit block displays
+
+  bde.info:
+    default: false
+    description: Get information about the plugin.
