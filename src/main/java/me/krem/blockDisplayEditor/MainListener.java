@@ -130,25 +130,34 @@ public class MainListener implements Listener {
         for (Entity entity : blockToMove) {
             if (entity instanceof BlockDisplay) {
                 if ((entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))) {
+                    Vector3f bdscale = ((BlockDisplay) entity).getTransformation().getScale();
                     if (play.isSneaking() && direction.equals("x")) {
+                        if (bdscale.x == -5.0f) return;
                         ((BlockDisplay) entity).setTransformation(scaleBlock(-scalar, 0.0f, 0.0f, (BlockDisplay) entity));
                     } else if (direction.equals("x")) {
+                        if (bdscale.x == 5.0f) return;
                         ((BlockDisplay) entity).setTransformation(scaleBlock(scalar, 0.0f, 0.0f, (BlockDisplay) entity));
                     } else if (play.isSneaking() && direction.equals("y")) {
+                        if (bdscale.y == -5.0f) return;
                         ((BlockDisplay) entity).setTransformation(scaleBlock(0.0f, -scalar, 0.0f, (BlockDisplay) entity));
                     } else if (direction.equals("y")) {
+                        if (bdscale.y == 5.0f) return;
                         ((BlockDisplay) entity).setTransformation(scaleBlock(0.0f, scalar, 0.0f, (BlockDisplay) entity));
                     } else if (play.isSneaking() && direction.equals("z")) {
+                        if (bdscale.z == -5.0f) return;
                         ((BlockDisplay) entity).setTransformation(scaleBlock(0.0f, 0.0f, -scalar, (BlockDisplay) entity));
                     } else if (direction.equals("z")) {
+                        if (bdscale.z == 5.0f) return;
                         ((BlockDisplay) entity).setTransformation(scaleBlock(0.0f, 0.0f, scalar, (BlockDisplay) entity));
                     }
                 }
             } else if (entity instanceof Interaction) {
                 if ((entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))) {
                     if (play.isSneaking() && direction.equals("y")) {
+                        if (((Interaction) entity).getInteractionHeight() == -5.0f) return;
                         ((Interaction) entity).setInteractionHeight(((Interaction) entity).getInteractionHeight() - (scalar));
                     } else if (direction.equals("y")) {
+                        if (((Interaction) entity).getInteractionHeight() == 5.0f) return;
                         ((Interaction) entity).setInteractionHeight(((Interaction) entity).getInteractionHeight() + scalar);
                     }
                 }
