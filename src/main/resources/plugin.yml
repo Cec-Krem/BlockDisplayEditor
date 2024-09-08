@@ -1,5 +1,5 @@
 name: BlockDisplayEditor
-version: '1.3'
+version: '1.4'
 main: me.krem.blockDisplayEditor.BlockDisplayEditor
 api-version: '1.21'
 authors: [ Krem ]
