@@ -23,6 +23,7 @@ public class CommandProcessor implements CommandExecutor {
     private final NamespacedKey blockKey;
     private final PersistentDataType<Byte, Boolean> dataType = PersistentDataType.BOOLEAN;
     private final PersistentDataType<String, String> blockDataType = PersistentDataType.STRING;
+
     public CommandProcessor(BlockDisplayEditor plugin) {
         this.plugin = plugin;
         this.key = new NamespacedKey(plugin, "BDE_Tool");
@@ -33,7 +34,7 @@ public class CommandProcessor implements CommandExecutor {
 
     public void editToolsTArrow(ItemStack item, String name, PotionType potionType) {
         PotionMeta tArrowMeta = (PotionMeta) item.getItemMeta();
-        tArrowMeta.setItemName(ChatColor.RESET+name);
+        tArrowMeta.setItemName(ChatColor.RESET + name);
         tArrowMeta.setBasePotionType(potionType);
         tArrowMeta.getPersistentDataContainer().set(key, dataType, true);
         item.setItemMeta(tArrowMeta);
@@ -41,7 +42,7 @@ public class CommandProcessor implements CommandExecutor {
 
     public void editToolsLambda(ItemStack item, String name) {
         ItemMeta toolMeta = item.getItemMeta();
-        toolMeta.setItemName(ChatColor.RESET+name);
+        toolMeta.setItemName(ChatColor.RESET + name);
         toolMeta.getPersistentDataContainer().set(key, dataType, true);
         item.setItemMeta(toolMeta);
     }
@@ -145,7 +146,7 @@ public class CommandProcessor implements CommandExecutor {
                                         return true;
                                     }
                                 } catch (Exception e) {
-                                    sender.sendMessage(ChatColor.DARK_RED+"It seems that the block you provided is invalid.");
+                                    sender.sendMessage(ChatColor.DARK_RED + "It seems that the block you provided is invalid.");
                                     return true;
                                 }
                             }
@@ -233,7 +234,7 @@ public class CommandProcessor implements CommandExecutor {
                             } catch (Exception ignored) {
                                 // There is nothing we will do
                             }
-                            player.sendMessage(ChatColor.AQUA+"Press F (or your swap hands key bind if different) to swap between additional tools.");
+                            player.sendMessage(ChatColor.AQUA + "Press F (or your swap hands key bind if different) to swap between additional tools.");
                             savedInv.putIfAbsent(pUID, pInv);
                             player.getInventory().clear();
                             getTools(player.getInventory());
