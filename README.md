@@ -15,6 +15,7 @@ Sneaking reverses the process of tools, except for the rotation reset and deleti
 - Translation (X,Y,Z) : works as if you were teleporting the block display 1 pixel away in the given axis (1/16 of a block).
 - Rotation (X,Y,Z) : rotates the block display according to the given axis. The use of quaternions prevents gimbal locks, but can feel unusual to new quaternions users.
 - Scale (X,Y,Z) : changes the scale of the block display in the given axis. Max size is 5 and minimum is -5 (yes, reversed blocks work). Changes 1 pixel by 1 pixel (1/16 of a block).
+- Brightness (Block, Sky) : changes the brightness of the block display, between 0 and 15 for each type of light.
 - Reset Rotation : self-explanatory, in case you want to reset the rotation.
 - Delete : self-explanatory, deletes the aimed block display (and interaction).
 
