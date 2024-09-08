@@ -183,7 +183,7 @@ public class MainListener implements Listener {
             String blockDisplayID = event.getRightClicked().getPersistentDataContainer().get(blockKey, blockDataType);
             List<Entity> near = p.getNearbyEntities(6.0d, 6.0d, 6.0d);
             if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Translation (X)")) {
-                translateOperation(near, 0.0625, 0.0d, 0.0d, p, blockDisplayID);
+                translateOperation(near, 0.0625d, 0.0d, 0.0d, p, blockDisplayID);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Translation (Y)")) {
                 translateOperation(near, 0.0, 0.0625d, 0.0d, p, blockDisplayID);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Translation (Z)")) {
