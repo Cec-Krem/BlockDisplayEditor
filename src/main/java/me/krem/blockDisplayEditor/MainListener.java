@@ -37,19 +37,22 @@ public class MainListener implements Listener {
     public Transformation rotQuaternionX(float angle, BlockDisplay blockDisplay) {
         Quaternionf leftRot = blockDisplay.getTransformation().getLeftRotation().rotateLocalX(angle);
         Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation().rotateLocalX(angle);
-        return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, new Vector3f(1.0f), rightRot);
+        Vector3f scale = blockDisplay.getTransformation().getScale();
+        return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, scale, rightRot);
     }
 
     public Transformation rotQuaternionY(float angle, BlockDisplay blockDisplay) {
         Quaternionf leftRot = blockDisplay.getTransformation().getLeftRotation().rotateLocalY(angle);
         Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation().rotateLocalY(angle);
-        return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, new Vector3f(1.0f), rightRot);
+        Vector3f scale = blockDisplay.getTransformation().getScale();
+        return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, scale, rightRot);
     }
 
     public Transformation rotQuaternionZ(float angle, BlockDisplay blockDisplay) {
         Quaternionf leftRot = blockDisplay.getTransformation().getLeftRotation().rotateLocalZ(angle);
         Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation().rotateLocalZ(angle);
-        return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, new Vector3f(1.0f), rightRot);
+        Vector3f scale = blockDisplay.getTransformation().getScale();
+        return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, scale, rightRot);
     }
 
     public Transformation resetRotQuaternion(BlockDisplay blockDisplay) {
@@ -77,10 +80,6 @@ public class MainListener implements Listener {
 
     public void rotateOperation(List<Entity> blockToMove, String direction, Player play, String blockDisplayID, float angle) {
         for (Entity entity : blockToMove) {
-            if (entity instanceof Interaction) {
-                ((Interaction) entity).setInteractionWidth(1.0f);
-                ((Interaction) entity).setInteractionHeight(1.0f);
-            }
             if (entity instanceof BlockDisplay) {
                 if ((entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))) {
                     if (play.isSneaking() && direction.equals("x")) {
