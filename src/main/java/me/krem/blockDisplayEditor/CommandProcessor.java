@@ -54,12 +54,12 @@ public class CommandProcessor implements CommandExecutor {
     }
 
     public void getTools(Inventory invThatNeedTools) {
-        ItemStack transX = new ItemStack(Material.TIPPED_ARROW);
-        editToolsTArrow(transX, "Translation (X)", PotionType.HEALING);
-        ItemStack transY = new ItemStack(Material.TIPPED_ARROW);
-        editToolsTArrow(transY, "Translation (Y)", PotionType.SWIFTNESS);
-        ItemStack transZ = new ItemStack(Material.TIPPED_ARROW);
-        editToolsTArrow(transZ, "Translation (Z)", PotionType.LUCK);
+        ItemStack moveX = new ItemStack(Material.TIPPED_ARROW);
+        editToolsTArrow(moveX, "Move (X)", PotionType.HEALING);
+        ItemStack moveY = new ItemStack(Material.TIPPED_ARROW);
+        editToolsTArrow(moveY, "Move (Y)", PotionType.SWIFTNESS);
+        ItemStack moveZ = new ItemStack(Material.TIPPED_ARROW);
+        editToolsTArrow(moveZ, "Move (Z)", PotionType.LUCK);
         ItemStack rotX = new ItemStack(Material.IRON_INGOT);
         editToolsLambda(rotX, "Rotation (X)");
         ItemStack rotY = new ItemStack(Material.COPPER_INGOT);
@@ -76,21 +76,27 @@ public class CommandProcessor implements CommandExecutor {
         editToolsLambda(scaleZ, "Scale (Z)");
         ItemStack delete = new ItemStack(Material.BARRIER);
         editToolsLambda(delete, "Delete");
+        ItemStack brightB = new ItemStack(Material.LIGHT);
+        editToolsLambda(brightB, "Brightness (Block)");
+        ItemStack brightS = new ItemStack(Material.NETHER_STAR);
+        editToolsLambda(brightS, "Brightness (Sky)");
         ItemStack confirmToolMode = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
         editToolsInvisible(confirmToolMode);
 
-        invThatNeedTools.setItem(0, transX);
-        invThatNeedTools.setItem(1, transY);
-        invThatNeedTools.setItem(2, transZ);
+        invThatNeedTools.setItem(0, moveX);
+        invThatNeedTools.setItem(1, moveY);
+        invThatNeedTools.setItem(2, moveZ);
         invThatNeedTools.setItem(3, rotX);
         invThatNeedTools.setItem(4, rotY);
         invThatNeedTools.setItem(5, rotZ);
-        invThatNeedTools.setItem(6, rotR);
+        invThatNeedTools.setItem(8, rotR);
         invThatNeedTools.setItem(27, scaleX);
         invThatNeedTools.setItem(28, scaleY);
         invThatNeedTools.setItem(29, scaleZ);
-        invThatNeedTools.setItem(30, delete);
-        invThatNeedTools.setItem(17, confirmToolMode);
+        invThatNeedTools.setItem(30, brightB);
+        invThatNeedTools.setItem(31, brightS);
+        invThatNeedTools.setItem(35, delete);
+        invThatNeedTools.setItem(38, confirmToolMode);
     }
 
     String logo = ChatColor.DARK_GRAY + "[" + ChatColor.AQUA + "BlockDisplayEditor" + ChatColor.DARK_GRAY + "]";
