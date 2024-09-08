@@ -189,11 +189,11 @@ public class MainListener implements Listener {
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Translation (Z)")) {
                 translateOperation(near, 0.0, 0.0d, 0.0625d, p, blockDisplayID);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Rotation (X)")) {
-                rotateOperation(near, "x", p, blockDisplayID, 0.02f);
+                rotateOperation(near, "x", p, blockDisplayID, 0.021875f);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Rotation (Y)")) {
-                rotateOperation(near, "y", p, blockDisplayID, 0.02f);
+                rotateOperation(near, "y", p, blockDisplayID, 0.021875f);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Rotation (Z)")) {
-                rotateOperation(near, "z", p, blockDisplayID, 0.02f);
+                rotateOperation(near, "z", p, blockDisplayID, 0.021875f);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Reset Rotation")) {
                 resetRotation(near, blockDisplayID);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Scale (X)")) {
@@ -224,11 +224,11 @@ public class MainListener implements Listener {
         Player p = event.getPlayer();
         if (p.hasPermission("bde.tools") && p.getInventory().contains(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
             ItemStack[] pInv = p.getInventory().getContents();
-            for (int i = 0; i<7;i++) {
-                p.getInventory().setItem(i, pInv[i+27]);
+            for (int i = 0; i < 7; i++) {
+                p.getInventory().setItem(i, pInv[i + 27]);
             }
-            for (int i = 27; i<34;i++) {
-                p.getInventory().setItem(i, pInv[i-27]);
+            for (int i = 27; i < 34; i++) {
+                p.getInventory().setItem(i, pInv[i - 27]);
             }
             event.setCancelled(true);
             return;
