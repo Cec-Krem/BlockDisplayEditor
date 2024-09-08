@@ -1,7 +1,6 @@
 package me.krem.blockDisplayEditor;
 
 import org.bukkit.*;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -80,6 +79,12 @@ public class CommandProcessor implements CommandExecutor {
         editToolsLambda(brightB, "Brightness (Block)");
         ItemStack brightS = new ItemStack(Material.NETHER_STAR);
         editToolsLambda(brightS, "Brightness (Sky)");
+        ItemStack move2X = new ItemStack(Material.AMETHYST_SHARD);
+        editToolsLambda(move2X, "Move (X) (Double Precision)");
+        ItemStack move2Y = new ItemStack(Material.PRISMARINE_SHARD);
+        editToolsLambda(move2Y, "Move (Y) (Double Precision)");
+        ItemStack move2Z = new ItemStack(Material.EMERALD);
+        editToolsLambda(move2Z, "Move (Z) (Double Precision)");
         ItemStack confirmToolMode = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
         editToolsInvisible(confirmToolMode);
 
@@ -95,6 +100,9 @@ public class CommandProcessor implements CommandExecutor {
         invThatNeedTools.setItem(29, scaleZ);
         invThatNeedTools.setItem(30, brightB);
         invThatNeedTools.setItem(31, brightS);
+        invThatNeedTools.setItem(32, move2X);
+        invThatNeedTools.setItem(33, move2Y);
+        invThatNeedTools.setItem(34, move2Z);
         invThatNeedTools.setItem(35, delete);
         invThatNeedTools.setItem(38, confirmToolMode);
     }
@@ -121,38 +129,42 @@ public class CommandProcessor implements CommandExecutor {
                             return false;
                         } else {
                             Location playerLoc = player.getLocation();
-                            int[] blockPos = {playerLoc.getBlockX(), playerLoc.getBlockY(), playerLoc.getBlockZ()};
-                            Location blockLoc = new Location(player.getWorld(), blockPos[0], blockPos[1], blockPos[2]);
-                            Location interLoc = new Location(player.getWorld(), blockPos[0] + 0.5f, blockPos[1], blockPos[2] + 0.5f);
+                            int blockX = playerLoc.getBlockX();
+                            int blockY = playerLoc.getBlockY();
+                            int blockZ = playerLoc.getBlockZ();
+                            Location blockLoc = new Location(player.getWorld(), blockX, blockY, blockZ);
+                            Location interLoc = blockLoc.clone().add(0.5f, 0.0f, 0.5f);
 
                             if (args.length == 1) {
-                                BlockData defaultBlock = Material.GRASS_BLOCK.createBlockData();
                                 Interaction i = player.getWorld().spawn(interLoc, Interaction.class);
                                 BlockDisplay d = player.getWorld().spawn(blockLoc, BlockDisplay.class);
-                                d.setBlock(defaultBlock);
+                                d.setBlock(Material.GRASS_BLOCK.createBlockData());
 
                                 String newID = UUID.randomUUID().toString();
                                 d.getPersistentDataContainer().set(blockKey, blockDataType, newID);
                                 i.getPersistentDataContainer().set(blockKey, blockDataType, newID);
-                                sender.sendMessage(ChatColor.GREEN + "Successfully created new block display at " + ChatColor.YELLOW + blockPos[0] + " " + blockPos[1] + " " + blockPos[2]);
+                                sender.sendMessage(ChatColor.GREEN + "Successfully created new block display at " + ChatColor.YELLOW + blockX + " " + blockY + " " + blockZ);
                                 return true;
                             } else {
                                 try {
-                                    args[1].toLowerCase();
-                                    if (Material.matchMaterial(args[1]).isBlock()) {
-                                        BlockData specialBlock = Material.matchMaterial(args[1]).createBlockData();
+                                    String blockType = args[1].toLowerCase();
+                                    Material material = Material.matchMaterial(blockType);
+                                    if (material != null && material.isBlock()) {
                                         Interaction i = player.getWorld().spawn(interLoc, Interaction.class);
                                         BlockDisplay d = player.getWorld().spawn(blockLoc, BlockDisplay.class);
-                                        d.setBlock(specialBlock);
+                                        d.setBlock(material.createBlockData());
 
                                         String newID = UUID.randomUUID().toString();
                                         d.getPersistentDataContainer().set(blockKey, blockDataType, newID);
                                         i.getPersistentDataContainer().set(blockKey, blockDataType, newID);
-                                        sender.sendMessage(ChatColor.GREEN + "Successfully created new block display at " + ChatColor.YELLOW + blockPos[0] + " " + blockPos[1] + " " + blockPos[2]);
+                                        sender.sendMessage(ChatColor.GREEN + "Successfully created new block display at " + ChatColor.YELLOW + blockX + " " + blockY + " " + blockZ);
+                                        return true;
+                                    } else {
+                                        sender.sendMessage(ChatColor.DARK_RED + "It seems that the block you provided is invalid.");
                                         return true;
                                     }
                                 } catch (Exception e) {
-                                    sender.sendMessage(ChatColor.DARK_RED + "It seems that the block you provided is invalid.");
+                                    sender.sendMessage(ChatColor.DARK_RED + "Error creating block display.");
                                     return true;
                                 }
                             }
@@ -163,60 +175,35 @@ public class CommandProcessor implements CommandExecutor {
                             player.sendMessage(ChatColor.DARK_RED + "Sorry, but you don't have the permission to do that.");
                             return false;
                         } else {
-                            int a = 0;
+                            double radius = 3.0d;
 
-                            if (args.length == 1) {
-                                List<Entity> near = player.getNearbyEntities(3.0d, 3.0d, 3.0d);
-                                for (Entity entity : near) {
-                                    if (entity instanceof BlockDisplay || entity instanceof Interaction) {
-                                        entity.remove();
-                                        a++;
+                            if (args.length > 1) {
+                                try {
+                                    radius = Double.parseDouble(args[1]);
+                                    if (radius > 12.0) {
+                                        player.sendMessage(ChatColor.DARK_RED + "Radius must be less than or equal to 12.");
+                                        return true;
                                     }
-                                }
-
-                                if (a == 0) {
-                                    player.sendMessage(ChatColor.DARK_RED + "No block display to delete (default radius = 3.0 blocks).");
-                                    return true;
-                                } else if (a % 2 != 0) {
-                                    player.sendMessage(ChatColor.BLUE + "Some block displays may not have been deleted.");
-                                    return true;
-                                } else {
-                                    player.sendMessage(ChatColor.GREEN + "Successfully deleted block display.");
+                                    if (radius <= 0) {
+                                        player.sendMessage(ChatColor.DARK_RED + "Radius must be greater than 0.");
+                                        return true;
+                                    }
+                                } catch (NumberFormatException e) {
+                                    player.sendMessage(ChatColor.DARK_RED + "Invalid radius value.");
                                     return true;
                                 }
                             }
 
-                            try {
-                                if (Double.parseDouble(args[1]) > 12.0) {
-                                    player.sendMessage(ChatColor.DARK_RED + "Sorry, but the radius must be less or equal than 12.");
-                                    return true;
-                                }
-                                if (Double.parseDouble(args[1]) <= 0) {
-                                    player.sendMessage(ChatColor.DARK_RED + "Sorry, but the radius must be over 0.");
-                                    return true;
-                                }
-                                double radi = (Double.parseDouble(args[1]) <= 12.0 && Double.parseDouble(args[1]) > 0) ? Double.parseDouble(args[1]) : 3.0d;
-                                List<Entity> near = player.getNearbyEntities(radi, radi, radi);
-                                for (Entity entity : near) {
-                                    if (entity instanceof BlockDisplay || entity instanceof Interaction) {
-                                        entity.remove();
-                                        a++;
-                                    }
-                                }
-
-                                if (a == 0) {
-                                    player.sendMessage(ChatColor.DARK_RED + "No block display to delete (radius = " + radi + " blocks).");
-                                    return true;
-                                } else if (a % 2 != 0) {
-                                    player.sendMessage(ChatColor.BLUE + "Some block displays may not have been deleted.");
-                                    return true;
-                                }
-                            } catch (Exception e) {
-                                player.sendMessage(ChatColor.DARK_RED + "An error occurred. Did you use a valid radius ?");
+                            List<Entity> near = player.getNearbyEntities(radius, radius, radius)
+                                    .stream().filter(e -> e instanceof BlockDisplay || e instanceof Interaction)
+                                    .toList();
+                            if (near.isEmpty()) {
+                                player.sendMessage(ChatColor.RED + "No block displays to delete.");
                                 return true;
+                            } else {
+                                near.forEach(Entity::remove);
+                                player.sendMessage(ChatColor.GREEN + "Successfully deleted block displays. Note that some can be half deleted if out of range.");
                             }
-
-                            player.sendMessage(ChatColor.GREEN + "Successfully deleted block display.");
                             return true;
                         }
 
