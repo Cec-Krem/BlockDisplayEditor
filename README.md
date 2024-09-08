@@ -7,7 +7,7 @@ This plugin uses 1.20 block displays and interactions.
 - /bde : get a list of every command
 - /bde create <block> : create a block display (attached to an interaction box) (by default a grass block)
 - /bde delete <radius> : delete every block display in the given radius (max radius : 12 blocks, not recommended to delete precise block displays).
-- /bde tools : get a set of tools to edit block displays (F (or your swap hands key bind if different) to switch between additional tools)
+- /bde tools : get a set of tools to edit block displays (F (or your swap hands key bind if different) to switch between additional tools). Execute this command again to get your inventory back.
 - /bde info : get informations about the plugin.
 
 ## Tools
