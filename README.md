@@ -24,6 +24,3 @@ Every command as well as the tools need permissions to be used. Everything is de
 # Questions
 ## Why is the interaction only moving with the translation tool ?
 Because interactions are basically hitboxes, it is not possible (to my knowledge) to make them rotate or not symmetrical (width is always equal to depth), so it's why I made it teleport with the translation tool, and could only change the height with the Scale (Y) tool.
-
-## Rotations reset the block displays size???
-Yes, the quaternion rotation method normalizes the block display, so it goes back to 1×1×1. I will maybe find a solution later (maybe by doing the maths myself), but for now it's a feature ; the interaction hitbox resets too. But honestly, it's not really horrible to rotate the block before sizing it.
