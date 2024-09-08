@@ -9,9 +9,6 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
-import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
@@ -68,7 +65,12 @@ public class MainListener implements Listener {
         return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, new Vector3f(scale[0] + scalarX, scale[1] + scalarY, scale[2] + scalarZ), rightRot);
     }
 
-    public void moveOperation(List<Entity> blockToMove, double x, double y, double z, Player play, String blockDisplayID) {
+    public void moveOperation(List<Entity> blockToMove, double x, double y, double z, Player play, String blockDisplayID, boolean doublePrecision) {
+        if (doublePrecision) {
+            x/=2;
+            y/=2;
+            z/=2;
+        }
         for (Entity entity : blockToMove) {
             if ((entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))) {
                 if (play.isSneaking()) {
@@ -201,13 +203,15 @@ public class MainListener implements Listener {
             return;
         } else {
             String blockDisplayID = event.getRightClicked().getPersistentDataContainer().get(blockKey, blockDataType);
-            List<Entity> near = p.getNearbyEntities(6.0d, 6.0d, 6.0d);
+            List<Entity> near = p.getNearbyEntities(6.0d, 6.0d, 6.0d)
+                    .stream().filter(e -> e instanceof BlockDisplay || e instanceof Interaction)
+                    .toList();
             if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (X)")) {
-                moveOperation(near, 0.0625d, 0.0d, 0.0d, p, blockDisplayID);
+                moveOperation(near, 0.0625d, 0.0d, 0.0d, p, blockDisplayID, false);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (Y)")) {
-                moveOperation(near, 0.0, 0.0625d, 0.0d, p, blockDisplayID);
+                moveOperation(near, 0.0, 0.0625d, 0.0d, p, blockDisplayID, false);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (Z)")) {
-                moveOperation(near, 0.0, 0.0d, 0.0625d, p, blockDisplayID);
+                moveOperation(near, 0.0, 0.0d, 0.0625d, p, blockDisplayID, false);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Rotation (X)")) {
                 rotateOperation(near, "x", p, blockDisplayID, (float) Math.PI / 180);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Rotation (Y)")) {
@@ -228,8 +232,14 @@ public class MainListener implements Listener {
                 brightnessOperation(near, "block", p, blockDisplayID);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Delete")) {
                 deleteOperation(near, blockDisplayID);
-                return;
+            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (X) (Double Precision)")) {
+                moveOperation(near, 0.0625d, 0.0d, 0.0d, p, blockDisplayID, true);
+            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (Y) (Double Precision)")) {
+                moveOperation(near, 0.0d, 0.0625d, 0.0d, p, blockDisplayID, true);
+            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (Z) (Double Precision)")) {
+                moveOperation(near, 0.0d, 0.0d, 0.0625d, p, blockDisplayID, true);
             }
+            return;
 
         }
     }
