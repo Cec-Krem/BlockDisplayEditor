@@ -18,6 +18,7 @@ Sneaking reverses the process of tools, except for the rotation reset and deleti
 - Brightness (Block, Sky) : changes the brightness of the block display, between 0 and 15 for each type of light.
 - Move (X,Y,Z) (Double Precision) : same as the Move tool but teleports the block displays 1/32 of a block (0.5 pixel) away in the given axis.
 - Reset Rotation : self-explanatory, in case you want to reset the rotation.
+- Clone Block Display : clones the aimed block display (including its interaction box) on top of itself.
 - Delete : self-explanatory, deletes the aimed block display (and interaction).
 
 ## Permissions
