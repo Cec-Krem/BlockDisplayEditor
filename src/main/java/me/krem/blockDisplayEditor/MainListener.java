@@ -3,6 +3,7 @@ package me.krem.blockDisplayEditor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.*;
@@ -19,6 +20,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.List;
+import java.util.UUID;
 
 public class MainListener implements Listener {
     private BlockDisplayEditor plugin;
@@ -26,6 +28,7 @@ public class MainListener implements Listener {
     private final NamespacedKey blockKey;
     private final PersistentDataType<Byte, Boolean> dataType = PersistentDataType.BOOLEAN;
     private final PersistentDataType<String, String> blockDataType = PersistentDataType.STRING;
+    private final float deg = (float) Math.PI / 180;
 
     public MainListener(BlockDisplayEditor plugin) {
         this.plugin = plugin;
@@ -67,12 +70,12 @@ public class MainListener implements Listener {
 
     public void moveOperation(List<Entity> blockToMove, double x, double y, double z, Player play, String blockDisplayID, boolean doublePrecision) {
         if (doublePrecision) {
-            x/=2;
-            y/=2;
-            z/=2;
+            x /= 2;
+            y /= 2;
+            z /= 2;
         }
         for (Entity entity : blockToMove) {
-            if ((entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))) {
+            if (entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
                 if (play.isSneaking()) {
                     entity.teleport(entity.getLocation().add(-x, -y, -z));
                 } else {
@@ -84,44 +87,53 @@ public class MainListener implements Listener {
 
     public void brightnessOperation(List<Entity> blockToTranslate, String type, Player play, String blockDisplayID) {
         for (Entity entity : blockToTranslate) {
-            if ((entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) && entity instanceof BlockDisplay bd) {
-                if (bd.getBrightness() == null) {
-                    bd.setBrightness(new Display.Brightness(0, 0));
-                }
-                int[] bdBrightness = {bd.getBrightness().getBlockLight(), bd.getBrightness().getSkyLight()};
-                if (play.isSneaking() && type.equals("block") && bdBrightness[0] > 0) {
-                    bd.setBrightness(new Display.Brightness(bdBrightness[0] - 1, bdBrightness[1]));
-                    play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.RED + "Set block brightness to " + bd.getBrightness().getBlockLight()));
-                } else if (play.isSneaking() && type.equals("sky") && bdBrightness[1] > 0) {
-                    bd.setBrightness(new Display.Brightness(bdBrightness[0], bdBrightness[1] - 1));
-                    play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.RED + "Set sky brightness to " + bd.getBrightness().getSkyLight()));
-                } else if (!play.isSneaking() && type.equals("block") && bdBrightness[0] < 15) {
-                    bd.setBrightness(new Display.Brightness(bdBrightness[0] + 1, bdBrightness[1]));
-                    play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.GREEN + "Set block brightness to " + bd.getBrightness().getBlockLight()));
-                } else if (!play.isSneaking() && type.equals("sky") && bdBrightness[1] < 15) {
-                    bd.setBrightness(new Display.Brightness(bdBrightness[0], bdBrightness[1] + 1));
-                    play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.GREEN + "Set sky brightness to " + bd.getBrightness().getSkyLight()));
-                }
+            if (!((entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) && entity instanceof BlockDisplay bd)) return;
+            if (bd.getBrightness() == null) {
+                bd.setBrightness(new Display.Brightness(0, 0));
+            }
+            int[] bdBrightness = {bd.getBrightness().getBlockLight(), bd.getBrightness().getSkyLight()};
+            if (play.isSneaking() && type.equals("block") && bdBrightness[0] > 0) {
+                bd.setBrightness(new Display.Brightness(bdBrightness[0] - 1, bdBrightness[1]));
+                play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.RED + "Set block brightness to " + bd.getBrightness().getBlockLight()));
+            } else if (play.isSneaking() && type.equals("sky") && bdBrightness[1] > 0) {
+                bd.setBrightness(new Display.Brightness(bdBrightness[0], bdBrightness[1] - 1));
+                play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.RED + "Set sky brightness to " + bd.getBrightness().getSkyLight()));
+            } else if (!play.isSneaking() && type.equals("block") && bdBrightness[0] < 15) {
+                bd.setBrightness(new Display.Brightness(bdBrightness[0] + 1, bdBrightness[1]));
+                play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.GREEN + "Set block brightness to " + bd.getBrightness().getBlockLight()));
+            } else if (!play.isSneaking() && type.equals("sky") && bdBrightness[1] < 15) {
+                bd.setBrightness(new Display.Brightness(bdBrightness[0], bdBrightness[1] + 1));
+                play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.GREEN + "Set sky brightness to " + bd.getBrightness().getSkyLight()));
             }
         }
     }
 
     public void rotateOperation(List<Entity> blockToMove, String direction, Player play, String blockDisplayID, float angle) {
         for (Entity entity : blockToMove) {
-            if (entity instanceof BlockDisplay bd) {
-                if ((entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))) {
-                    if (play.isSneaking() && direction.equals("x")) {
-                        bd.setTransformation(rotQuaternionX(-angle, bd));
-                    } else if (direction.equals("x")) {
-                        bd.setTransformation(rotQuaternionX(angle, bd));
-                    } else if (play.isSneaking() && direction.equals("y")) {
-                        bd.setTransformation(rotQuaternionY(-angle, bd));
-                    } else if (direction.equals("y")) {
-                        bd.setTransformation(rotQuaternionY(angle, bd));
-                    } else if (play.isSneaking() && direction.equals("z")) {
-                        bd.setTransformation(rotQuaternionZ(-angle, bd));
-                    } else if (direction.equals("z")) {
-                        bd.setTransformation(rotQuaternionZ(angle, bd));
+            if ((entity instanceof BlockDisplay bd && (entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)))) {
+                if (play.isSneaking()) {
+                    switch (direction) {
+                        case "x":
+                            bd.setTransformation(rotQuaternionX(-angle, bd));
+                            break;
+                        case "y":
+                            bd.setTransformation(rotQuaternionY(-angle, bd));
+                            break;
+                        case "z":
+                            bd.setTransformation(rotQuaternionZ(-angle, bd));
+                            break;
+                    }
+                } else {
+                    switch (direction) {
+                        case "x":
+                            bd.setTransformation(rotQuaternionX(angle, bd));
+                            break;
+                        case "y":
+                            bd.setTransformation(rotQuaternionY(angle, bd));
+                            break;
+                        case "z":
+                            bd.setTransformation(rotQuaternionZ(angle, bd));
+                            break;
                     }
                 }
             }
@@ -136,13 +148,32 @@ public class MainListener implements Listener {
         }
     }
 
-    public void deleteOperation(List<Entity> blockToMove, String blockDisplayID) {
-        for (Entity entity : blockToMove) {
+    public void deleteOperation(List<Entity> blockToDelete, String blockDisplayID) {
+        for (Entity entity : blockToDelete) {
             if (entity instanceof BlockDisplay bd && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
                 bd.remove();
             }
             if (entity instanceof Interaction it && it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
                 it.remove();
+            }
+        }
+    }
+
+    public void cloneOperation(List<Entity> blockToClone, Player player, String blockDisplayID) {
+        String newID = UUID.randomUUID().toString();
+        for (Entity entity : blockToClone) {
+            if (entity instanceof BlockDisplay bd && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+                Location bdLoc = bd.getLocation().clone().add(0.0d,bd.getTransformation().getScale().y,0.0d);
+                BlockDisplay d = player.getWorld().spawn(bdLoc, BlockDisplay.class);
+                d.getPersistentDataContainer().set(blockKey, blockDataType, newID);
+                d.setBlock(bd.getBlock());
+                d.setTransformation(bd.getTransformation());
+            }
+            if (entity instanceof Interaction it && it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+                Location itLoc = it.getLocation().clone().add(0.0d,it.getInteractionHeight(),0.0d);
+                Interaction i = player.getWorld().spawn(itLoc, Interaction.class);
+                i.getPersistentDataContainer().set(blockKey, blockDataType, newID);
+                i.setInteractionHeight(it.getInteractionHeight());
             }
         }
     }
@@ -209,15 +240,15 @@ public class MainListener implements Listener {
             if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (X)")) {
                 moveOperation(near, 0.0625d, 0.0d, 0.0d, p, blockDisplayID, false);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (Y)")) {
-                moveOperation(near, 0.0, 0.0625d, 0.0d, p, blockDisplayID, false);
+                moveOperation(near, 0.0d, 0.0625d, 0.0d, p, blockDisplayID, false);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (Z)")) {
-                moveOperation(near, 0.0, 0.0d, 0.0625d, p, blockDisplayID, false);
+                moveOperation(near, 0.0d, 0.0d, 0.0625d, p, blockDisplayID, false);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Rotation (X)")) {
-                rotateOperation(near, "x", p, blockDisplayID, (float) Math.PI / 180);
+                rotateOperation(near, "x", p, blockDisplayID, deg);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Rotation (Y)")) {
-                rotateOperation(near, "y", p, blockDisplayID, (float) Math.PI / 180);
+                rotateOperation(near, "y", p, blockDisplayID, deg);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Rotation (Z)")) {
-                rotateOperation(near, "y", p, blockDisplayID, (float) Math.PI / 180);
+                rotateOperation(near, "y", p, blockDisplayID, deg);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Reset Rotation")) {
                 resetRotation(near, blockDisplayID);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Scale (X)")) {
@@ -238,9 +269,10 @@ public class MainListener implements Listener {
                 moveOperation(near, 0.0d, 0.0625d, 0.0d, p, blockDisplayID, true);
             } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (Z) (Double Precision)")) {
                 moveOperation(near, 0.0d, 0.0d, 0.0625d, p, blockDisplayID, true);
+            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Clone Block Display")) {
+                cloneOperation(near, p, blockDisplayID);
             }
             return;
-
         }
     }
 
