@@ -85,6 +85,8 @@ public class CommandProcessor implements CommandExecutor {
         editToolsLambda(move2Y, "Move (Y) (Double Precision)");
         ItemStack move2Z = new ItemStack(Material.EMERALD);
         editToolsLambda(move2Z, "Move (Z) (Double Precision)");
+        ItemStack cloneBD = new ItemStack(Material.MAGMA_CREAM);
+        editToolsLambda(cloneBD, "Clone Block Display");
         ItemStack confirmToolMode = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
         editToolsInvisible(confirmToolMode);
 
@@ -94,6 +96,7 @@ public class CommandProcessor implements CommandExecutor {
         invThatNeedTools.setItem(3, rotX);
         invThatNeedTools.setItem(4, rotY);
         invThatNeedTools.setItem(5, rotZ);
+        invThatNeedTools.setItem(7, cloneBD);
         invThatNeedTools.setItem(8, rotR);
         invThatNeedTools.setItem(27, scaleX);
         invThatNeedTools.setItem(28, scaleY);
