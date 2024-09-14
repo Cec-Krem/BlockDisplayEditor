@@ -11,7 +11,7 @@ This plugin uses 1.20 block displays and interactions.
 - /bde info : get informations about the plugin.
 
 ## Tools
-Sneaking reverses the process of tools, except for the rotation reset and deletion tool.
+Sneaking reverses the process of tools, except for the rotation reset, clone and deletion tool.
 - Move (X,Y,Z) : works as if you were teleporting the block display 1 pixel away in the given axis (1/16 of a block).
 - Rotation (X,Y,Z) : rotates the block display according to the given axis. The use of quaternions prevents gimbal locks, but can feel unusual to new quaternions users.
 - Scale (X,Y,Z) : changes the scale of the block display in the given axis. Max size is 5 and minimum is -5 (yes, reversed blocks work). Changes 1 pixel by 1 pixel (1/16 of a block).
