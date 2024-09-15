@@ -30,3 +30,6 @@ Because interactions are basically hitboxes, it is not possible (to my knowledge
 
 ## You should do X or Y
 You can pull issues here, but I won't see them immediately, or contact me on discord : ceckrem.
+
+# I'm also on Spigot now !
+https://www.spigotmc.org/resources/block-display-editor.119601/
