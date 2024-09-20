@@ -235,45 +235,65 @@ public class MainListener implements Listener {
             return;
         } else {
             String blockDisplayID = event.getRightClicked().getPersistentDataContainer().get(blockKey, blockDataType);
+            String item = p.getInventory().getItemInMainHand().getItemMeta().getItemName();
             List<Entity> near = p.getNearbyEntities(6.0d, 6.0d, 6.0d)
                     .stream().filter(e -> e instanceof BlockDisplay || e instanceof Interaction)
                     .toList();
-            if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (X)")) {
-                moveOperation(near, 0.0625d, 0.0d, 0.0d, p, blockDisplayID, false);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (Y)")) {
-                moveOperation(near, 0.0d, 0.0625d, 0.0d, p, blockDisplayID, false);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (Z)")) {
-                moveOperation(near, 0.0d, 0.0d, 0.0625d, p, blockDisplayID, false);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Rotation (X)")) {
-                rotateOperation(near, "x", p, blockDisplayID, deg);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Rotation (Y)")) {
-                rotateOperation(near, "y", p, blockDisplayID, deg);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Rotation (Z)")) {
-                rotateOperation(near, "y", p, blockDisplayID, deg);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Reset Rotation")) {
-                resetRotation(near, blockDisplayID);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Scale (X)")) {
-                scaleOperation(near, "x", p, blockDisplayID, 0.0625f);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Scale (Y)")) {
-                scaleOperation(near, "y", p, blockDisplayID, 0.0625f);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Scale (Z)")) {
-                scaleOperation(near, "z", p, blockDisplayID, 0.0625f);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Brightness (Sky)")) {
-                brightnessOperation(near, "sky", p, blockDisplayID);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Brightness (Block)")) {
-                brightnessOperation(near, "block", p, blockDisplayID);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Delete")) {
-                deleteOperation(near, blockDisplayID);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (X) (Double Precision)")) {
-                moveOperation(near, 0.0625d, 0.0d, 0.0d, p, blockDisplayID, true);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (Y) (Double Precision)")) {
-                moveOperation(near, 0.0d, 0.0625d, 0.0d, p, blockDisplayID, true);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Move (Z) (Double Precision)")) {
-                moveOperation(near, 0.0d, 0.0d, 0.0625d, p, blockDisplayID, true);
-            } else if (p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Clone Block Display")) {
-                cloneOperation(near, p, blockDisplayID);
+            switch (item) {
+                case "Move (X)":
+                    moveOperation(near, 0.0625d, 0.0d, 0.0d, p, blockDisplayID, false);
+                    break;
+                case "Move (Y)":
+                    moveOperation(near, 0.0d, 0.0625d, 0.0d, p, blockDisplayID, false);
+                    break;
+                case "Move (Z)":
+                    moveOperation(near, 0.0d, 0.0d, 0.0625d, p, blockDisplayID, false);
+                    break;
+                case "Rotation (X)":
+                    rotateOperation(near, "x", p, blockDisplayID, deg);
+                    break;
+                case "Rotation (Y)":
+                    rotateOperation(near, "y", p, blockDisplayID, deg);
+                    break;
+                case "Rotation (Z)":
+                    rotateOperation(near, "z", p, blockDisplayID, deg);
+                    break;
+                case "Reset Rotation":
+                    resetRotation(near, blockDisplayID);
+                    break;
+                case "Scale (X)":
+                    scaleOperation(near, "x", p, blockDisplayID, 0.0625f);
+                    break;
+                case "Scale (Y)":
+                    scaleOperation(near, "y", p, blockDisplayID, 0.0625f);
+                    break;
+                case "Scale (Z)":
+                    scaleOperation(near, "z", p, blockDisplayID, 0.0625f);
+                    break;
+                case "Brightness (Sky)":
+                    brightnessOperation(near, "sky", p, blockDisplayID);
+                    break;
+                case "Brightness (Block)":
+                    brightnessOperation(near, "block", p, blockDisplayID);
+                    break;
+                case "Delete":
+                    deleteOperation(near, blockDisplayID);
+                    break;
+                case "Move (X) (Double Precision)":
+                    moveOperation(near, 0.0625d, 0.0d, 0.0d, p, blockDisplayID, true);
+                    break;
+                case "Move (Y) (Double Precision)":
+                    moveOperation(near, 0.0d, 0.0625d, 0.0d, p, blockDisplayID, true);
+                    break;
+                case "Move (Z) (Double Precision)":
+                    moveOperation(near, 0.0d, 0.0d, 0.0625d, p, blockDisplayID, true);
+                    break;
+                case "Clone Block Display":
+                    cloneOperation(near, p, blockDisplayID);
+                    break;
+                default:
+                    return;
             }
-            return;
         }
     }
 
@@ -282,7 +302,6 @@ public class MainListener implements Listener {
         Player p = event.getPlayer();
         if (p.hasPermission("bde.tools") && p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Delete") && event.getBlockPlaced().getType().equals(Material.BARRIER)) {
             event.setCancelled(true);
-            return;
         }
     }
 
@@ -291,7 +310,6 @@ public class MainListener implements Listener {
         Player p = event.getPlayer();
         if (p.hasPermission("bde.tools") && p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Brightness (Block)") && event.getBlockPlaced().getType().equals(Material.LIGHT)) {
             event.setCancelled(true);
-            return;
         }
     }
 
@@ -308,7 +326,6 @@ public class MainListener implements Listener {
                 p.getInventory().setItem(i, pInv[i - 27]);
             }
             event.setCancelled(true);
-            return;
         }
     }
 }
