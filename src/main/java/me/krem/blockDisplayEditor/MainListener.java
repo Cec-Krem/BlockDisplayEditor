@@ -87,23 +87,24 @@ public class MainListener implements Listener {
 
     public void brightnessOperation(List<Entity> blockToTranslate, String type, Player play, String blockDisplayID) {
         for (Entity entity : blockToTranslate) {
-            if (!((entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) && entity instanceof BlockDisplay bd)) return;
-            if (bd.getBrightness() == null) {
-                bd.setBrightness(new Display.Brightness(0, 0));
-            }
-            int[] bdBrightness = {bd.getBrightness().getBlockLight(), bd.getBrightness().getSkyLight()};
-            if (play.isSneaking() && type.equals("block") && bdBrightness[0] > 0) {
-                bd.setBrightness(new Display.Brightness(bdBrightness[0] - 1, bdBrightness[1]));
-                play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.RED + "Set block brightness to " + bd.getBrightness().getBlockLight()));
-            } else if (play.isSneaking() && type.equals("sky") && bdBrightness[1] > 0) {
-                bd.setBrightness(new Display.Brightness(bdBrightness[0], bdBrightness[1] - 1));
-                play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.RED + "Set sky brightness to " + bd.getBrightness().getSkyLight()));
-            } else if (!play.isSneaking() && type.equals("block") && bdBrightness[0] < 15) {
-                bd.setBrightness(new Display.Brightness(bdBrightness[0] + 1, bdBrightness[1]));
-                play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.GREEN + "Set block brightness to " + bd.getBrightness().getBlockLight()));
-            } else if (!play.isSneaking() && type.equals("sky") && bdBrightness[1] < 15) {
-                bd.setBrightness(new Display.Brightness(bdBrightness[0], bdBrightness[1] + 1));
-                play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.GREEN + "Set sky brightness to " + bd.getBrightness().getSkyLight()));
+            if (entity instanceof BlockDisplay bd && (entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))) {
+                if (bd.getBrightness() == null) {
+                    bd.setBrightness(new Display.Brightness(0, 0));
+                }
+                int[] bdBrightness = {bd.getBrightness().getBlockLight(), bd.getBrightness().getSkyLight()};
+                if (play.isSneaking() && type.equals("block") && bdBrightness[0] > 0) {
+                    bd.setBrightness(new Display.Brightness(bdBrightness[0] - 1, bdBrightness[1]));
+                    play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.RED + "Set block brightness to " + bd.getBrightness().getBlockLight()));
+                } else if (play.isSneaking() && type.equals("sky") && bdBrightness[1] > 0) {
+                    bd.setBrightness(new Display.Brightness(bdBrightness[0], bdBrightness[1] - 1));
+                    play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.RED + "Set sky brightness to " + bd.getBrightness().getSkyLight()));
+                } else if (!play.isSneaking() && type.equals("block") && bdBrightness[0] < 15) {
+                    bd.setBrightness(new Display.Brightness(bdBrightness[0] + 1, bdBrightness[1]));
+                    play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.GREEN + "Set block brightness to " + bd.getBrightness().getBlockLight()));
+                } else if (!play.isSneaking() && type.equals("sky") && bdBrightness[1] < 15) {
+                    bd.setBrightness(new Display.Brightness(bdBrightness[0], bdBrightness[1] + 1));
+                    play.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.GREEN + "Set sky brightness to " + bd.getBrightness().getSkyLight()));
+                }
             }
         }
     }
