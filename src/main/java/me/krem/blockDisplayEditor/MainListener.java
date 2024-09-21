@@ -23,36 +23,35 @@ import java.util.List;
 import java.util.UUID;
 
 public class MainListener implements Listener {
-    private BlockDisplayEditor plugin;
     private final NamespacedKey key;
     private final NamespacedKey blockKey;
     private final PersistentDataType<Byte, Boolean> dataType = PersistentDataType.BOOLEAN;
     private final PersistentDataType<String, String> blockDataType = PersistentDataType.STRING;
     private final float deg = (float) Math.PI / 180;
+    private final float onePixel = 0.0625f;
 
     public MainListener(BlockDisplayEditor plugin) {
-        this.plugin = plugin;
         this.key = new NamespacedKey(plugin, "BDE_Tool");
         this.blockKey = new NamespacedKey(plugin, "BDE_Display");
     }
 
     public Transformation rotQuaternionX(float angle, BlockDisplay blockDisplay) {
-        Quaternionf leftRot = blockDisplay.getTransformation().getLeftRotation().rotateLocalX(angle);
-        Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation().rotateLocalX(angle);
+        Quaternionf leftRot = blockDisplay.getTransformation().getLeftRotation().rotateX(angle);
+        Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation().rotateX(angle);
         Vector3f scale = blockDisplay.getTransformation().getScale();
         return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, scale, rightRot);
     }
 
     public Transformation rotQuaternionY(float angle, BlockDisplay blockDisplay) {
-        Quaternionf leftRot = blockDisplay.getTransformation().getLeftRotation().rotateLocalY(angle);
-        Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation().rotateLocalY(angle);
+        Quaternionf leftRot = blockDisplay.getTransformation().getLeftRotation().rotateY(angle);
+        Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation().rotateY(angle);
         Vector3f scale = blockDisplay.getTransformation().getScale();
         return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, scale, rightRot);
     }
 
     public Transformation rotQuaternionZ(float angle, BlockDisplay blockDisplay) {
-        Quaternionf leftRot = blockDisplay.getTransformation().getLeftRotation().rotateLocalZ(angle);
-        Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation().rotateLocalZ(angle);
+        Quaternionf leftRot = blockDisplay.getTransformation().getLeftRotation().rotateZ(angle);
+        Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation().rotateZ(angle);
         Vector3f scale = blockDisplay.getTransformation().getScale();
         return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, scale, rightRot);
     }
@@ -75,12 +74,27 @@ public class MainListener implements Listener {
             z /= 2;
         }
         for (Entity entity : blockToMove) {
-            if (entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+            if ((entity instanceof Interaction || entity instanceof BlockDisplay) && entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
                 if (play.isSneaking()) {
                     entity.teleport(entity.getLocation().add(-x, -y, -z));
                 } else {
                     entity.teleport(entity.getLocation().add(x, y, z));
                 }
+            }
+        }
+    }
+
+    public void shrinkOperation(List<Entity> blockToMove, Player play, String blockDisplayID) {
+        for (Entity entity : blockToMove) {
+            if (entity instanceof Interaction it && entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+                float width = it.getInteractionWidth();
+                if (!play.isSneaking() && width > onePixel) {
+                    it.setInteractionWidth(width - onePixel);
+                    it.teleport(it.getLocation().clone().add((double) -onePixel/2,0.0f,(double) -onePixel/2));
+                } else if (play.isSneaking() && width < 2.0f) {
+                    it.setInteractionWidth(width + onePixel);
+                    it.teleport(it.getLocation().clone().add((double) onePixel/2,0.0f,(double) onePixel/2));
+                } else return;
             }
         }
     }
@@ -111,7 +125,8 @@ public class MainListener implements Listener {
 
     public void rotateOperation(List<Entity> blockToMove, String direction, Player play, String blockDisplayID, float angle) {
         for (Entity entity : blockToMove) {
-            if ((entity instanceof BlockDisplay bd && (entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)))) {
+            if (entity instanceof BlockDisplay bd
+                    && entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
                 if (play.isSneaking()) {
                     switch (direction) {
                         case "x":
@@ -143,76 +158,88 @@ public class MainListener implements Listener {
 
     public void resetRotation(List<Entity> blockToMove, String blockDisplayID) {
         for (Entity entity : blockToMove) {
-            if (entity instanceof BlockDisplay bd && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+            if (entity instanceof BlockDisplay bd
+                    && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))
                 bd.setTransformation(resetRotQuaternion(bd));
-            }
         }
     }
 
     public void deleteOperation(List<Entity> blockToDelete, String blockDisplayID) {
         for (Entity entity : blockToDelete) {
-            if (entity instanceof BlockDisplay bd && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+            if (entity instanceof BlockDisplay bd
+                    && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))
                 bd.remove();
-            }
-            if (entity instanceof Interaction it && it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+            if (entity instanceof Interaction it
+                    && it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))
                 it.remove();
-            }
         }
     }
 
     public void cloneOperation(List<Entity> blockToClone, Player player, String blockDisplayID) {
         String newID = UUID.randomUUID().toString();
         for (Entity entity : blockToClone) {
-            if (entity instanceof BlockDisplay bd && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
-                Location bdLoc = bd.getLocation().clone().add(0.0d,bd.getTransformation().getScale().y,0.0d);
+            if (entity instanceof BlockDisplay bd
+                    && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+                Location bdLoc = bd.getLocation().clone().add(0.0d, bd.getTransformation().getScale().y, 0.0d);
                 BlockDisplay d = player.getWorld().spawn(bdLoc, BlockDisplay.class);
                 d.getPersistentDataContainer().set(blockKey, blockDataType, newID);
                 d.setBlock(bd.getBlock());
                 d.setTransformation(bd.getTransformation());
             }
-            if (entity instanceof Interaction it && it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
-                Location itLoc = it.getLocation().clone().add(0.0d,it.getInteractionHeight(),0.0d);
+            if (entity instanceof Interaction it
+                    && it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+                Location itLoc = it.getLocation().clone().add(0.0d, it.getInteractionHeight(), 0.0d);
                 Interaction i = player.getWorld().spawn(itLoc, Interaction.class);
                 i.getPersistentDataContainer().set(blockKey, blockDataType, newID);
                 i.setInteractionHeight(it.getInteractionHeight());
+                i.setInteractionWidth(it.getInteractionWidth());
             }
         }
     }
 
     public void scaleOperation(List<Entity> blockToMove, String direction, Player play, String blockDisplayID, float scalar) {
         for (Entity entity : blockToMove) {
-            if (entity instanceof BlockDisplay bd) {
-                if ((entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))) {
-                    Vector3f bdscale = bd.getTransformation().getScale();
-                    if (play.isSneaking() && direction.equals("x")) {
-                        if (bdscale.x == -5.0f) return;
-                        bd.setTransformation(scaleBlock(-scalar, 0.0f, 0.0f, bd));
-                    } else if (direction.equals("x")) {
-                        if (bdscale.x == 5.0f) return;
-                        bd.setTransformation(scaleBlock(scalar, 0.0f, 0.0f, bd));
-                    } else if (play.isSneaking() && direction.equals("y")) {
-                        if (bdscale.y == -5.0f) return;
-                        bd.setTransformation(scaleBlock(0.0f, -scalar, 0.0f, bd));
-                    } else if (direction.equals("y")) {
-                        if (bdscale.y == 5.0f) return;
-                        bd.setTransformation(scaleBlock(0.0f, scalar, 0.0f, bd));
-                    } else if (play.isSneaking() && direction.equals("z")) {
-                        if (bdscale.z == -5.0f) return;
-                        bd.setTransformation(scaleBlock(0.0f, 0.0f, -scalar, bd));
-                    } else if (direction.equals("z")) {
-                        if (bdscale.z == 5.0f) return;
-                        bd.setTransformation(scaleBlock(0.0f, 0.0f, scalar, bd));
+            if (entity instanceof BlockDisplay bd
+                    && entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+                Vector3f bdscale = bd.getTransformation().getScale();
+                if (play.isSneaking()) {
+                    switch(direction) {
+                        case "x":
+                            if (bdscale.x <= -5.0f) return;
+                            bd.setTransformation(scaleBlock(-scalar, 0.0f, 0.0f, bd));
+                            break;
+                        case "y":
+                            if (bdscale.y <= -5.0f) return;
+                            bd.setTransformation(scaleBlock(0.0f, -scalar, 0.0f, bd));
+                            break;
+                        case "z":
+                            if (bdscale.z <= -5.0f) return;
+                            bd.setTransformation(scaleBlock(0.0f, 0.0f, -scalar, bd));
+                            break;
+                    }
+                } else {
+                    switch(direction) {
+                        case "x":
+                            if (bdscale.x >= 5.0f) return;
+                            bd.setTransformation(scaleBlock(scalar, 0.0f, 0.0f, bd));
+                            break;
+                        case "y":
+                            if (bdscale.y >= 5.0f) return;
+                            bd.setTransformation(scaleBlock(0.0f, scalar, 0.0f, bd));
+                            break;
+                        case "z":
+                            if (bdscale.z >= 5.0f) return;
+                            bd.setTransformation(scaleBlock(0.0f, 0.0f, scalar, bd));
+                            break;
                     }
                 }
             } else if (entity instanceof Interaction it) {
-                if ((it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))) {
-                    if (play.isSneaking() && direction.equals("y")) {
-                        if (it.getInteractionHeight() == -5.0f) return;
-                        it.setInteractionHeight(it.getInteractionHeight() - (scalar));
-                    } else if (direction.equals("y")) {
-                        if (it.getInteractionHeight() == 5.0f) return;
-                        it.setInteractionHeight(it.getInteractionHeight() + scalar);
-                    }
+                if (it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)
+                        && direction.equals("y")) {
+                    int one = play.isSneaking() ? -1 : 1;
+                    if ((it.getInteractionHeight() < 5.0f && one > 0)
+                    || (it.getInteractionHeight() > -5.0f && one < 0))
+                        it.setInteractionHeight(it.getInteractionHeight() + (scalar)*one);
                 }
             }
         }
@@ -225,29 +252,29 @@ public class MainListener implements Listener {
         if (!(event.getRightClicked() instanceof Interaction)) return;
         Player p = event.getPlayer();
         try {
-            p.getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer();
+            if (!p.getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(key, dataType)
+                    || !event.getRightClicked().getPersistentDataContainer().has(blockKey, blockDataType)) return;
         } catch (Exception e) {
             return;
         }
-        if (!p.getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(key, dataType)) return;
         if (!p.hasPermission("bde.tools")) {
             p.sendMessage(ChatColor.DARK_RED + "Sorry, but you don't have the permission to edit block displays. These tools are useless for you.");
-            return;
         } else {
             String blockDisplayID = event.getRightClicked().getPersistentDataContainer().get(blockKey, blockDataType);
             String item = p.getInventory().getItemInMainHand().getItemMeta().getItemName();
-            List<Entity> near = p.getNearbyEntities(6.0d, 6.0d, 6.0d)
+            List<Entity> near = new java.util.ArrayList<>(p.getNearbyEntities(12.0d, 12.0d, 12.0d)
                     .stream().filter(e -> e instanceof BlockDisplay || e instanceof Interaction)
-                    .toList();
+                    .toList());
+            near.removeIf(e -> e.getPersistentDataContainer().isEmpty());
             switch (item) {
                 case "Move (X)":
-                    moveOperation(near, 0.0625d, 0.0d, 0.0d, p, blockDisplayID, false);
+                    moveOperation(near, onePixel, 0.0d, 0.0d, p, blockDisplayID, false);
                     break;
                 case "Move (Y)":
-                    moveOperation(near, 0.0d, 0.0625d, 0.0d, p, blockDisplayID, false);
+                    moveOperation(near, 0.0d, onePixel, 0.0d, p, blockDisplayID, false);
                     break;
                 case "Move (Z)":
-                    moveOperation(near, 0.0d, 0.0d, 0.0625d, p, blockDisplayID, false);
+                    moveOperation(near, 0.0d, 0.0d, onePixel, p, blockDisplayID, false);
                     break;
                 case "Rotation (X)":
                     rotateOperation(near, "x", p, blockDisplayID, deg);
@@ -262,13 +289,13 @@ public class MainListener implements Listener {
                     resetRotation(near, blockDisplayID);
                     break;
                 case "Scale (X)":
-                    scaleOperation(near, "x", p, blockDisplayID, 0.0625f);
+                    scaleOperation(near, "x", p, blockDisplayID, onePixel);
                     break;
                 case "Scale (Y)":
-                    scaleOperation(near, "y", p, blockDisplayID, 0.0625f);
+                    scaleOperation(near, "y", p, blockDisplayID, onePixel);
                     break;
                 case "Scale (Z)":
-                    scaleOperation(near, "z", p, blockDisplayID, 0.0625f);
+                    scaleOperation(near, "z", p, blockDisplayID, onePixel);
                     break;
                 case "Brightness (Sky)":
                     brightnessOperation(near, "sky", p, blockDisplayID);
@@ -280,19 +307,21 @@ public class MainListener implements Listener {
                     deleteOperation(near, blockDisplayID);
                     break;
                 case "Move (X) (Double Precision)":
-                    moveOperation(near, 0.0625d, 0.0d, 0.0d, p, blockDisplayID, true);
+                    moveOperation(near, onePixel, 0.0d, 0.0d, p, blockDisplayID, true);
                     break;
                 case "Move (Y) (Double Precision)":
-                    moveOperation(near, 0.0d, 0.0625d, 0.0d, p, blockDisplayID, true);
+                    moveOperation(near, 0.0d, onePixel, 0.0d, p, blockDisplayID, true);
                     break;
                 case "Move (Z) (Double Precision)":
-                    moveOperation(near, 0.0d, 0.0d, 0.0625d, p, blockDisplayID, true);
+                    moveOperation(near, 0.0d, 0.0d, onePixel, p, blockDisplayID, true);
                     break;
                 case "Clone Block Display":
                     cloneOperation(near, p, blockDisplayID);
                     break;
+                case "Shrink Interaction":
+                    shrinkOperation(near, p, blockDisplayID);
+                    break;
                 default:
-                    return;
             }
         }
     }
@@ -300,7 +329,9 @@ public class MainListener implements Listener {
     @EventHandler
     public void onPlaceBarrier(BlockPlaceEvent event) {
         Player p = event.getPlayer();
-        if (p.hasPermission("bde.tools") && p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Delete") && event.getBlockPlaced().getType().equals(Material.BARRIER)) {
+        if (p.hasPermission("bde.tools")
+                && p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Delete")
+                && event.getBlockPlaced().getType().equals(Material.BARRIER)) {
             event.setCancelled(true);
         }
     }
@@ -308,7 +339,9 @@ public class MainListener implements Listener {
     @EventHandler
     public void onPlaceLight(BlockPlaceEvent event) {
         Player p = event.getPlayer();
-        if (p.hasPermission("bde.tools") && p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Brightness (Block)") && event.getBlockPlaced().getType().equals(Material.LIGHT)) {
+        if (p.hasPermission("bde.tools")
+                && p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Brightness (Block)")
+                && event.getBlockPlaced().getType().equals(Material.LIGHT)) {
             event.setCancelled(true);
         }
     }
@@ -317,7 +350,8 @@ public class MainListener implements Listener {
     public void onSwapToChangeHotbar(PlayerSwapHandItemsEvent event) {
         Player p = event.getPlayer();
         if (p.getInventory().getChestplate() == null) return;
-        if (p.hasPermission("bde.tools") && p.getInventory().getChestplate().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
+        if (p.hasPermission("bde.tools")
+                && p.getInventory().getChestplate().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
             ItemStack[] pInv = p.getInventory().getContents();
             for (int i = 0; i < 9; i++) {
                 p.getInventory().setItem(i, pInv[i + 27]);
