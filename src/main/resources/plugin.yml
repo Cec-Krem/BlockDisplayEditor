@@ -1,5 +1,5 @@
 name: BlockDisplayEditor
-version: '1.5.2'
+version: '1.6'
 main: me.krem.blockDisplayEditor.BlockDisplayEditor
 api-version: '1.21'
 authors: [ Krem ]
@@ -25,19 +25,19 @@ permissions:
 
   bde.bde:
     default: false
-    description: Access /bde
+    description: Access /bde.
 
   bde.create:
     default: false
-    description: Allows to create block displays
+    description: Allows to create block displays.
 
   bde.delete:
     default: false
-    description: Allows to delete block displays
+    description: Allows to delete block displays.
 
   bde.tools:
     default: false
-    description: Allows to get AND use the BDE set of tools to edit block displays
+    description: Allows to get AND use the BDE set of tools to edit block displays.
 
   bde.info:
     default: false
