@@ -87,6 +87,8 @@ public class CommandProcessor implements CommandExecutor {
         editToolsLambda(move2Z, "Move (Z) (Double Precision)");
         ItemStack cloneBD = new ItemStack(Material.MAGMA_CREAM);
         editToolsLambda(cloneBD, "Clone Block Display");
+        ItemStack shrink = new ItemStack(Material.PRISMARINE_CRYSTALS);
+        editToolsLambda(shrink, "Shrink Interaction");
         ItemStack confirmToolMode = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
         editToolsInvisible(confirmToolMode);
 
@@ -96,6 +98,7 @@ public class CommandProcessor implements CommandExecutor {
         invThatNeedTools.setItem(3, rotX);
         invThatNeedTools.setItem(4, rotY);
         invThatNeedTools.setItem(5, rotZ);
+        invThatNeedTools.setItem(6, shrink);
         invThatNeedTools.setItem(7, cloneBD);
         invThatNeedTools.setItem(8, rotR);
         invThatNeedTools.setItem(27, scaleX);
@@ -221,19 +224,18 @@ public class CommandProcessor implements CommandExecutor {
                             UUID pUID = player.getUniqueId();
                             ItemStack[] pInv = player.getInventory().getContents();
                             try {
-                                if (savedInv.get(pUID).length != 0 || savedInv.isEmpty()) {
+                                if ((savedInv.get(pUID).length != 0 || savedInv.isEmpty())) {
                                     player.getInventory().setContents(savedInv.get(pUID));
                                     player.updateInventory();
                                     savedInv.remove(pUID);
                                     return true;
                                 }
-                            } catch (Exception ignored) {
-                                // There is nothing we will do
+                            } catch (Exception e) {
+                                savedInv.putIfAbsent(pUID, pInv);
+                                player.getInventory().clear();
+                                getTools(player.getInventory());
                             }
                             player.sendMessage(ChatColor.AQUA + "Press F (or your swap hands key bind if different) to swap between additional tools.");
-                            savedInv.putIfAbsent(pUID, pInv);
-                            player.getInventory().clear();
-                            getTools(player.getInventory());
                             return true;
                         }
 
