@@ -30,7 +30,7 @@ Every command as well as the tools need permissions to be used. Everything is de
 Because interactions are basically hitboxes, it is not possible (to my knowledge) to make them rotate or not symmetrical (width is always equal to depth), so it's why I made it teleport with the move tool, and could only change the height with the Scale (Y) tool.
 
 ## You should do X or Y
-You can pull issues here, but I won't see them immediately, or contact me on discord : ceckrem.
+You can pull issues or requests here, but I won't see them immediately, or contact me on discord : ceckrem.
 
 # I'm also on Spigot now !
 https://www.spigotmc.org/resources/block-display-editor.119601/
