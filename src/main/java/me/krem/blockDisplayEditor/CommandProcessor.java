@@ -11,17 +11,22 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionType;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 public class CommandProcessor implements CommandExecutor {
-    private BlockDisplayEditor plugin;
     private final NamespacedKey key;
     private final NamespacedKey blockKey;
     private final PersistentDataType<Byte, Boolean> dataType = PersistentDataType.BOOLEAN;
     private final PersistentDataType<String, String> blockDataType = PersistentDataType.STRING;
+    HashMap<UUID, ItemStack[]> savedInv = new HashMap<>();
+    HashMap<UUID, Boolean> hasTools = new HashMap<>();
+    String logo = ChatColor.DARK_GRAY + "[" + ChatColor.AQUA + "BlockDisplayEditor" + ChatColor.DARK_GRAY + "]";
+    private BlockDisplayEditor plugin;
+    private final Particle boundaries = Particle.SOUL_FIRE_FLAME;
 
     public CommandProcessor(BlockDisplayEditor plugin) {
         this.plugin = plugin;
@@ -29,7 +34,38 @@ public class CommandProcessor implements CommandExecutor {
         this.blockKey = new NamespacedKey(plugin, "BDE_Display");
     }
 
-    HashMap<UUID, ItemStack[]> savedInv = new HashMap<>();
+    public void drawParticles(Player player, Location location, double width, double height, double n) {
+        Location origin = location.clone().add(-(width / 2), 0.0d, -(width / 2));
+        for (int xz = 0; xz < width * n; xz++) {
+            // X axis
+            player.spawnParticle(boundaries, origin.clone().add(xz / n, 0.0d, 0.0d), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+            player.spawnParticle(boundaries, origin.clone().add(xz / n, 0.0d, width), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+            player.spawnParticle(boundaries, origin.clone().add(xz / n, height, 0.0d), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+            player.spawnParticle(boundaries, origin.clone().add(xz / n, height, width), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+            // Z axis
+            player.spawnParticle(boundaries, origin.clone().add(0.0d, 0.0d, xz / n), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+            player.spawnParticle(boundaries, origin.clone().add(width, 0.0d, xz / n), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+            player.spawnParticle(boundaries, origin.clone().add(0.0d, height, xz / n), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+            player.spawnParticle(boundaries, origin.clone().add(width, height, xz / n), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+        }
+        if (height >= 0) {
+            for (int y = 0; y < height * n; y++) {
+                // Y axis (positive)
+                player.spawnParticle(boundaries, origin.clone().add(0.0d, y / n, 0.0d), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+                player.spawnParticle(boundaries, origin.clone().add(0.0d, y / n, width), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+                player.spawnParticle(boundaries, origin.clone().add(width, y / n, 0.0d), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+                player.spawnParticle(boundaries, origin.clone().add(width, y / n, width), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+            }
+        } else {
+            for (int y = 0; y > height * n; y--) {
+                // Y axis (negative)
+                player.spawnParticle(boundaries, origin.clone().add(0.0d, y / n, 0.0d), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+                player.spawnParticle(boundaries, origin.clone().add(0.0d, y / n, width), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+                player.spawnParticle(boundaries, origin.clone().add(width, y / n, 0.0d), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+                player.spawnParticle(boundaries, origin.clone().add(width, y / n, width), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+            }
+        }
+    }
 
     public void editToolsTArrow(ItemStack item, String name, PotionType potionType) {
         PotionMeta tArrowMeta = (PotionMeta) item.getItemMeta();
@@ -95,25 +131,29 @@ public class CommandProcessor implements CommandExecutor {
         invThatNeedTools.setItem(0, moveX);
         invThatNeedTools.setItem(1, moveY);
         invThatNeedTools.setItem(2, moveZ);
+
         invThatNeedTools.setItem(3, rotX);
         invThatNeedTools.setItem(4, rotY);
         invThatNeedTools.setItem(5, rotZ);
-        invThatNeedTools.setItem(6, shrink);
-        invThatNeedTools.setItem(7, cloneBD);
         invThatNeedTools.setItem(8, rotR);
-        invThatNeedTools.setItem(27, scaleX);
-        invThatNeedTools.setItem(28, scaleY);
-        invThatNeedTools.setItem(29, scaleZ);
+
+        invThatNeedTools.setItem(18, scaleX);
+        invThatNeedTools.setItem(19, scaleY);
+        invThatNeedTools.setItem(20, scaleZ);
+        invThatNeedTools.setItem(21, shrink);
+
+        invThatNeedTools.setItem(26, cloneBD);
+        invThatNeedTools.setItem(27, move2X);
+        invThatNeedTools.setItem(28, move2Y);
+        invThatNeedTools.setItem(29, move2Z);
+
         invThatNeedTools.setItem(30, brightB);
         invThatNeedTools.setItem(31, brightS);
-        invThatNeedTools.setItem(32, move2X);
-        invThatNeedTools.setItem(33, move2Y);
-        invThatNeedTools.setItem(34, move2Z);
+
         invThatNeedTools.setItem(35, delete);
+
         invThatNeedTools.setItem(38, confirmToolMode);
     }
-
-    String logo = ChatColor.DARK_GRAY + "[" + ChatColor.AQUA + "BlockDisplayEditor" + ChatColor.DARK_GRAY + "]";
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player player) {
@@ -228,13 +268,32 @@ public class CommandProcessor implements CommandExecutor {
                                     player.getInventory().setContents(savedInv.get(pUID));
                                     player.updateInventory();
                                     savedInv.remove(pUID);
-                                    return true;
+                                    hasTools.put(pUID, false);
                                 }
                             } catch (Exception e) {
                                 savedInv.putIfAbsent(pUID, pInv);
                                 player.getInventory().clear();
                                 getTools(player.getInventory());
+                                hasTools.put(pUID, true);
                             }
+                            new BukkitRunnable() {
+                                public void run() {
+                                    if (!hasTools.get(pUID) || !player.hasPermission("bde.tools")) cancel();
+                                    else {
+                                        List<Entity> near = new java.util.ArrayList<>(player.getNearbyEntities(12.0d, 12.0d, 12.0d)
+                                                .stream().filter(e -> e instanceof Interaction it)
+                                                .toList());
+                                        near.removeIf(e -> e.getPersistentDataContainer().isEmpty());
+                                        for (Entity interaction : near) {
+                                            if (!(interaction instanceof Interaction it)) return;
+                                            Location interloc = it.getLocation();
+                                            drawParticles(player, interloc, it.getInteractionWidth(), it.getInteractionHeight(), 2);
+                                        }
+                                    }
+                                }
+                            }.runTaskTimer(plugin, 0, 5);
+
+                            if (!hasTools.get(pUID)) return true;
                             player.sendMessage(ChatColor.AQUA + "Press F (or your swap hands key bind if different) to swap between additional tools.");
                             return true;
                         }
