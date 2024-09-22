@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Transformation;
@@ -33,6 +34,18 @@ public class MainListener implements Listener {
     public MainListener(BlockDisplayEditor plugin) {
         this.key = new NamespacedKey(plugin, "BDE_Tool");
         this.blockKey = new NamespacedKey(plugin, "BDE_Display");
+    }
+
+    public void shuffleInv(Inventory pInstantInventory, ItemStack[] pInvPS) {
+        for (int i = 0; i <= 8; i++) {
+            pInstantInventory.setItem(i, pInvPS[i + 27]);
+        }
+        for (int i = 18; i <= 26; i++) {
+            pInstantInventory.setItem(i, pInvPS[i - 18]);
+        }
+        for (int i = 27; i <= 35; i++) {
+            pInstantInventory.setItem(i, pInvPS[i - 9]);
+        }
     }
 
     public Transformation rotQuaternionX(float angle, BlockDisplay blockDisplay) {
@@ -185,6 +198,7 @@ public class MainListener implements Listener {
                 d.getPersistentDataContainer().set(blockKey, blockDataType, newID);
                 d.setBlock(bd.getBlock());
                 d.setTransformation(bd.getTransformation());
+                d.setBrightness(bd.getBrightness());
             }
             if (entity instanceof Interaction it
                     && it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
@@ -352,13 +366,7 @@ public class MainListener implements Listener {
         if (p.getInventory().getChestplate() == null) return;
         if (p.hasPermission("bde.tools")
                 && p.getInventory().getChestplate().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
-            ItemStack[] pInv = p.getInventory().getContents();
-            for (int i = 0; i < 9; i++) {
-                p.getInventory().setItem(i, pInv[i + 27]);
-            }
-            for (int i = 27; i < 36; i++) {
-                p.getInventory().setItem(i, pInv[i - 27]);
-            }
+            shuffleInv(p.getInventory(), p.getInventory().getContents());
             event.setCancelled(true);
         }
     }
