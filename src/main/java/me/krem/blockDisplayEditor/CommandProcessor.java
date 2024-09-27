@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class CommandProcessor implements CommandExecutor {
-    private final NamespacedKey key;
+    private final NamespacedKey toolKey;
     private final NamespacedKey blockKey;
     private final PersistentDataType<Byte, Boolean> dataType = PersistentDataType.BOOLEAN;
     private final PersistentDataType<String, String> blockDataType = PersistentDataType.STRING;
@@ -26,11 +26,11 @@ public class CommandProcessor implements CommandExecutor {
     HashMap<UUID, Boolean> hasTools = new HashMap<>();
     String logo = ChatColor.DARK_GRAY + "[" + ChatColor.AQUA + "BlockDisplayEditor" + ChatColor.DARK_GRAY + "]";
     private BlockDisplayEditor plugin;
-    private final Particle boundaries = Particle.SOUL_FIRE_FLAME;
+    private final Particle boundaries = Particle.COMPOSTER;
 
     public CommandProcessor(BlockDisplayEditor plugin) {
         this.plugin = plugin;
-        this.key = new NamespacedKey(plugin, "BDE_Tool");
+        this.toolKey = new NamespacedKey(plugin, "BDE_Tool");
         this.blockKey = new NamespacedKey(plugin, "BDE_Display");
     }
 
@@ -47,8 +47,10 @@ public class CommandProcessor implements CommandExecutor {
             player.spawnParticle(boundaries, origin.clone().add(width, 0.0d, xz / n), 1, 0.0d, 0.0d, 0.0d, 0.0d);
             player.spawnParticle(boundaries, origin.clone().add(0.0d, height, xz / n), 1, 0.0d, 0.0d, 0.0d, 0.0d);
             player.spawnParticle(boundaries, origin.clone().add(width, height, xz / n), 1, 0.0d, 0.0d, 0.0d, 0.0d);
+            // XYZ Positive corner (height relative)
+            player.spawnParticle(boundaries, origin.clone().add(width, height, width), 1, 0.0d, 0.0d, 0.0d, 0.0d);
         }
-        if (height >= 0) {
+        if (height > 0) {
             for (int y = 0; y < height * n; y++) {
                 // Y axis (positive)
                 player.spawnParticle(boundaries, origin.clone().add(0.0d, y / n, 0.0d), 1, 0.0d, 0.0d, 0.0d, 0.0d);
@@ -56,7 +58,7 @@ public class CommandProcessor implements CommandExecutor {
                 player.spawnParticle(boundaries, origin.clone().add(width, y / n, 0.0d), 1, 0.0d, 0.0d, 0.0d, 0.0d);
                 player.spawnParticle(boundaries, origin.clone().add(width, y / n, width), 1, 0.0d, 0.0d, 0.0d, 0.0d);
             }
-        } else {
+        } else if (height < 0) {
             for (int y = 0; y > height * n; y--) {
                 // Y axis (negative)
                 player.spawnParticle(boundaries, origin.clone().add(0.0d, y / n, 0.0d), 1, 0.0d, 0.0d, 0.0d, 0.0d);
@@ -71,20 +73,14 @@ public class CommandProcessor implements CommandExecutor {
         PotionMeta tArrowMeta = (PotionMeta) item.getItemMeta();
         tArrowMeta.setItemName(ChatColor.RESET + name);
         tArrowMeta.setBasePotionType(potionType);
-        tArrowMeta.getPersistentDataContainer().set(key, dataType, true);
+        tArrowMeta.getPersistentDataContainer().set(toolKey, dataType, true);
         item.setItemMeta(tArrowMeta);
     }
 
     public void editToolsLambda(ItemStack item, String name) {
         ItemMeta toolMeta = item.getItemMeta();
         toolMeta.setItemName(ChatColor.RESET + name);
-        toolMeta.getPersistentDataContainer().set(key, dataType, true);
-        item.setItemMeta(toolMeta);
-    }
-
-    public void editToolsInvisible(ItemStack item) {
-        ItemMeta toolMeta = item.getItemMeta();
-        toolMeta.setHideTooltip(true);
+        toolMeta.getPersistentDataContainer().set(toolKey, dataType, true);
         item.setItemMeta(toolMeta);
     }
 
@@ -125,8 +121,8 @@ public class CommandProcessor implements CommandExecutor {
         editToolsLambda(cloneBD, "Clone Block Display");
         ItemStack shrink = new ItemStack(Material.PRISMARINE_CRYSTALS);
         editToolsLambda(shrink, "Shrink Interaction");
-        ItemStack confirmToolMode = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
-        editToolsInvisible(confirmToolMode);
+        ItemStack raydrag = new ItemStack(Material.STRUCTURE_VOID);
+        editToolsLambda(raydrag, "Ray Drag");
 
         invThatNeedTools.setItem(0, moveX);
         invThatNeedTools.setItem(1, moveY);
@@ -141,6 +137,7 @@ public class CommandProcessor implements CommandExecutor {
         invThatNeedTools.setItem(19, scaleY);
         invThatNeedTools.setItem(20, scaleZ);
         invThatNeedTools.setItem(21, shrink);
+        invThatNeedTools.setItem(22, raydrag);
 
         invThatNeedTools.setItem(26, cloneBD);
         invThatNeedTools.setItem(27, move2X);
@@ -151,8 +148,6 @@ public class CommandProcessor implements CommandExecutor {
         invThatNeedTools.setItem(31, brightS);
 
         invThatNeedTools.setItem(35, delete);
-
-        invThatNeedTools.setItem(38, confirmToolMode);
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -254,9 +249,6 @@ public class CommandProcessor implements CommandExecutor {
                         }
 
                     case "tools":
-                         /* Save inventory and give tools. If the player execute
-                            the command again, give back the saved inventory. */
-
                         if (!player.hasPermission("bde.tools")) {
                             player.sendMessage(ChatColor.DARK_RED + "Sorry, but you don't have the permission to do that.");
                             return false;
@@ -304,7 +296,9 @@ public class CommandProcessor implements CommandExecutor {
                             return false;
                         } else {
                             sender.sendMessage(logo + ChatColor.GREEN + " running on version " + ChatColor.YELLOW + plugin.getDescription().getVersion() + ChatColor.GREEN + " for Bukkit " + ChatColor.YELLOW + plugin.getDescription().getAPIVersion());
-                            sender.sendMessage(ChatColor.GRAY + "Author : " + ChatColor.AQUA + "Krem");
+                            sender.sendMessage(ChatColor.GRAY + "Author : " + ChatColor.AQUA + "Krem"
+                                    + ChatColor.DARK_GRAY + " (" + ChatColor.GRAY + ChatColor.ITALIC +
+                                    "https://github.com/Cec-Krem" + ChatColor.DARK_GRAY + ")");
                             return true;
                         }
 
@@ -316,7 +310,9 @@ public class CommandProcessor implements CommandExecutor {
         } else {
             sender.sendMessage(ChatColor.RED + "Sorry, only players can run BDE commands.");
             sender.sendMessage(logo + ChatColor.GREEN + " running on version " + ChatColor.YELLOW + plugin.getDescription().getVersion() + ChatColor.GREEN + " for Bukkit " + ChatColor.YELLOW + plugin.getDescription().getAPIVersion());
-            sender.sendMessage(ChatColor.GRAY + "Author : " + ChatColor.AQUA + "Krem");
+            sender.sendMessage(ChatColor.GRAY + "Author : " + ChatColor.AQUA + "Krem"
+                    + ChatColor.DARK_GRAY + " (" + ChatColor.GRAY + ChatColor.ITALIC +
+                    "https://github.com/Cec-Krem" + ChatColor.DARK_GRAY + ")");
             return true;
         }
     }
