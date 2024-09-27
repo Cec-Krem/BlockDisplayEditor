@@ -21,6 +21,7 @@ Sneaking reverses the process of tools, except for the rotation reset, clone and
 - Clone Block Display : clones the aimed block display (including its interaction box) on top of itself.
 - Delete : self-explanatory, deletes the aimed block display (and interaction).
 - Shrink Interaction : reduce or expand the interaction hitbox (1/16 of a block to 2 blocks wide)
+- Ray Drag : moves the clicked block display (with Double Precision, so 1/32 of a block) wherever you look at. Good to move a block display on greater distances.
 
 ## Permissions
 Every command as well as the tools need permissions to be used. Everything is detailed in the plugin.yml.
