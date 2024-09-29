@@ -4,7 +4,6 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -23,7 +22,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.*;
-import java.util.List;
 
 public class MainListener implements Listener {
     private final NamespacedKey toolKey;
@@ -245,7 +243,7 @@ public class MainListener implements Listener {
                         case "z":
                             if (bdscale.z <= -5.0f) return;
                             bd.setTransformation(scaleBlock(0.0f, 0.0f, -scalar, bd));
-                            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.RED + "Z Scale : " + bd.getTransformation().getScale().y));
+                            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(ChatColor.RED + "Z Scale : " + bd.getTransformation().getScale().z));
                             break;
                     }
                 } else {
@@ -285,7 +283,7 @@ public class MainListener implements Listener {
         if (eventEntity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)
                 && eventEntity instanceof Interaction it) {
             Location playerLoc = player.getLocation();
-            Location bdLoc = eventEntity.getLocation().add(0.0d,0.0d,0.0d);
+            Location bdLoc = eventEntity.getLocation();
             double initialDistance = Math.min(playerLoc.distance(bdLoc), 3.0d);
             new BukkitRunnable() {
                 public void run() {
@@ -400,33 +398,19 @@ public class MainListener implements Listener {
     }
 
     @EventHandler
-    public void onPlaceBarrier(BlockPlaceEvent event) {
+    public void onPlaceTool(BlockPlaceEvent event) {
         Player p = event.getPlayer();
-        if (p.hasPermission("bde.tools")
-                && p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Delete")
-                && event.getBlockPlaced().getType().equals(Material.BARRIER)) {
-            event.setCancelled(true);
+        if (!p.hasPermission("bde.tools")) return;
+        try {
+            boolean hasTool = Arrays.stream(p.getInventory().getContents())
+                    .filter(Objects::nonNull)
+                    .filter(ItemStack::hasItemMeta)
+                    .anyMatch(item -> p.getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(toolKey, dataType));
+            if (!hasTool) return;
+        } catch (Exception e) {
+            return;
         }
-    }
-
-    @EventHandler
-    public void onPlaceStructureVoid(BlockPlaceEvent event) {
-        Player p = event.getPlayer();
-        if (p.hasPermission("bde.tools")
-                && p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Ray Drag")
-                && event.getBlockPlaced().getType().equals(Material.STRUCTURE_VOID)) {
-            event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onPlaceLight(BlockPlaceEvent event) {
-        Player p = event.getPlayer();
-        if (p.hasPermission("bde.tools")
-                && p.getInventory().getItemInMainHand().getItemMeta().getItemName().equals("Brightness (Block)")
-                && event.getBlockPlaced().getType().equals(Material.LIGHT)) {
-            event.setCancelled(true);
-        }
+        event.setCancelled(true);
     }
 
     @EventHandler
@@ -436,7 +420,7 @@ public class MainListener implements Listener {
         try {
             boolean hasTool = Arrays.stream(p.getInventory().getContents())
                     .filter(Objects::nonNull)
-                    .filter(item -> item.hasItemMeta())
+                    .filter(ItemStack::hasItemMeta)
                     .anyMatch(item -> item.getItemMeta().getPersistentDataContainer().has(toolKey, dataType));
             if (!hasTool) return;
         } catch (Exception e) {
