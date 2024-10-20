@@ -14,13 +14,13 @@ This plugin uses 1.20 block displays and interactions.
 Sneaking reverses the process of tools, except for the rotation reset, clone, drag and deletion tool.
 - Move (X,Y,Z) : works as if you were teleporting the block display 1 pixel away in the given axis (1/16 of a block).
 - Rotation (X,Y,Z) : rotates the block display according to the given axis. The use of quaternions prevents gimbal locks, but can feel unusual to new quaternions users.
-- Scale (X,Y,Z) : changes the scale of the block display in the given axis. Max size is 5 and minimum is -5 (yes, reversed blocks work). Changes 1 pixel by 1 pixel (1/16 of a block).
+- Scale (X,Y,Z) : changes the scale of the block display in the given axis. Max size is 5 and minimum is -5 (yes, reversed blocks work). Changes half a pixel by half a pixel (1/32 of a block).
 - Brightness (Block, Sky) : changes the brightness of the block display, between 0 and 15 for each type of light.
 - Move (X,Y,Z) (Double Precision) : same as the Move tool but teleports the block displays 1/32 of a block (0.5 pixel) away in the given axis.
 - Reset Rotation : self-explanatory, in case you want to reset the rotation.
 - Clone Block Display : clones the aimed block display (including its interaction box) on top of itself.
 - Delete : self-explanatory, deletes the aimed block display (and interaction).
-- Shrink Interaction : reduce or expand the interaction hitbox (1/16 of a block to 2 blocks wide).
+- Shrink Interaction : reduce or expand the interaction hitbox (1/32 of a block to 2 blocks wide).
 - Ray Drag : moves the clicked block display (with Double Precision, so 1/32 of a block) wherever you look at. Good to move a block display on greater distances.
 
 ## Permissions
