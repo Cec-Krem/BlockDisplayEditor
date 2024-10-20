@@ -31,6 +31,7 @@ public class MainListener implements Listener {
     private final PersistentDataType<String, String> blockDataType = PersistentDataType.STRING;
     private final float deg = (float) Math.PI / 180;
     private final float onePixel = 0.0625f;
+    private final float halfPixel = 0.03125f;
     HashMap<UUID, Boolean> isRayDragging = new HashMap<>();
     private BlockDisplayEditor plugin;
 
@@ -112,12 +113,12 @@ public class MainListener implements Listener {
                 float width = it.getInteractionWidth();
                 if (!player.isSneaking() && width > onePixel) {
                     it.setInteractionWidth(width - onePixel);
-                    it.teleport(it.getLocation().clone().add((double) -onePixel/2,0.0f,(double) -onePixel/2));
+                    it.teleport(it.getLocation().clone().add(-halfPixel,0.0f, -halfPixel));
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(
                             ChatColor.RED + "Set interaction width to " + it.getInteractionWidth()));
                 } else if (player.isSneaking() && width < 2.0f) {
                     it.setInteractionWidth(width + onePixel);
-                    it.teleport(it.getLocation().clone().add((double) onePixel/2,0.0f,(double) onePixel/2));
+                    it.teleport(it.getLocation().clone().add(halfPixel,0.0f, halfPixel));
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(
                             ChatColor.GREEN + "Set interaction width to " + it.getInteractionWidth()));
                 } else return;
@@ -318,12 +319,12 @@ public class MainListener implements Listener {
             p.sendMessage(ChatColor.DARK_RED + "Sorry, but you don't have the permission to edit block displays. These tools are useless for you.");
         } else {
             String blockDisplayID = event.getRightClicked().getPersistentDataContainer().get(blockKey, blockDataType);
-            String item = p.getInventory().getItemInMainHand().getItemMeta().getItemName();
+            String itemName = p.getInventory().getItemInMainHand().getItemMeta().getDisplayName();
             List<Entity> near = new java.util.ArrayList<>(p.getNearbyEntities(12.0d, 12.0d, 12.0d).stream()
                     .filter(e -> e instanceof BlockDisplay || e instanceof Interaction)
                     .toList());
             near.removeIf(e -> e.getPersistentDataContainer().isEmpty());
-            switch (item) {
+            switch (itemName) {
                 case "Move (X)" -> moveOperation(near, onePixel, 0.0d, 0.0d, p, blockDisplayID, false);
                 case "Move (Y)" -> moveOperation(near, 0.0d, onePixel, 0.0d, p, blockDisplayID, false);
                 case "Move (Z)" -> moveOperation(near, 0.0d, 0.0d, onePixel, p, blockDisplayID, false);
@@ -336,9 +337,9 @@ public class MainListener implements Listener {
                 case "Rotation (Z)" -> rotateOperation(near, "z", p, blockDisplayID, deg);
                 case "Reset Rotation" -> resetRotation(near, blockDisplayID);
 
-                case "Scale (X)" -> scaleOperation(near, "x", p, blockDisplayID, onePixel);
-                case "Scale (Y)" -> scaleOperation(near, "y", p, blockDisplayID, onePixel);
-                case "Scale (Z)" -> scaleOperation(near, "z", p, blockDisplayID, onePixel);
+                case "Scale (X)" -> scaleOperation(near, "x", p, blockDisplayID, halfPixel);
+                case "Scale (Y)" -> scaleOperation(near, "y", p, blockDisplayID, halfPixel);
+                case "Scale (Z)" -> scaleOperation(near, "z", p, blockDisplayID, halfPixel);
                 case "Shrink Interaction" -> shrinkOperation(near, p, blockDisplayID);
 
                 case "Brightness (Sky)" -> brightnessOperation(near, "sky", p, blockDisplayID);
