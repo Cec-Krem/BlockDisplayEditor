@@ -9,6 +9,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.Inventory;
@@ -154,27 +155,15 @@ public class MainListener implements Listener {
                     && entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
                 if (player.isSneaking()) {
                     switch (direction) {
-                        case "x":
-                            bd.setTransformation(rotQuaternionX(-angle, bd));
-                            break;
-                        case "y":
-                            bd.setTransformation(rotQuaternionY(-angle, bd));
-                            break;
-                        case "z":
-                            bd.setTransformation(rotQuaternionZ(-angle, bd));
-                            break;
+                        case "x" -> bd.setTransformation(rotQuaternionX(-angle, bd));
+                        case "y" -> bd.setTransformation(rotQuaternionY(-angle, bd));
+                        case "z"-> bd.setTransformation(rotQuaternionZ(-angle, bd));
                     }
                 } else {
                     switch (direction) {
-                        case "x":
-                            bd.setTransformation(rotQuaternionX(angle, bd));
-                            break;
-                        case "y":
-                            bd.setTransformation(rotQuaternionY(angle, bd));
-                            break;
-                        case "z":
-                            bd.setTransformation(rotQuaternionZ(angle, bd));
-                            break;
+                        case "x" -> bd.setTransformation(rotQuaternionX(angle, bd));
+                        case "y" -> bd.setTransformation(rotQuaternionY(angle, bd));
+                        case "z" -> bd.setTransformation(rotQuaternionZ(angle, bd));
                     }
                 }
             }
@@ -335,64 +324,30 @@ public class MainListener implements Listener {
                     .toList());
             near.removeIf(e -> e.getPersistentDataContainer().isEmpty());
             switch (item) {
-                case "Move (X)":
-                    moveOperation(near, onePixel, 0.0d, 0.0d, p, blockDisplayID, false);
-                    break;
-                case "Move (Y)":
-                    moveOperation(near, 0.0d, onePixel, 0.0d, p, blockDisplayID, false);
-                    break;
-                case "Move (Z)":
-                    moveOperation(near, 0.0d, 0.0d, onePixel, p, blockDisplayID, false);
-                    break;
-                case "Rotation (X)":
-                    rotateOperation(near, "x", p, blockDisplayID, deg);
-                    break;
-                case "Rotation (Y)":
-                    rotateOperation(near, "y", p, blockDisplayID, deg);
-                    break;
-                case "Rotation (Z)":
-                    rotateOperation(near, "z", p, blockDisplayID, deg);
-                    break;
-                case "Reset Rotation":
-                    resetRotation(near, blockDisplayID);
-                    break;
-                case "Scale (X)":
-                    scaleOperation(near, "x", p, blockDisplayID, onePixel);
-                    break;
-                case "Scale (Y)":
-                    scaleOperation(near, "y", p, blockDisplayID, onePixel);
-                    break;
-                case "Scale (Z)":
-                    scaleOperation(near, "z", p, blockDisplayID, onePixel);
-                    break;
-                case "Brightness (Sky)":
-                    brightnessOperation(near, "sky", p, blockDisplayID);
-                    break;
-                case "Brightness (Block)":
-                    brightnessOperation(near, "block", p, blockDisplayID);
-                    break;
-                case "Delete":
-                    deleteOperation(near, blockDisplayID);
-                    break;
-                case "Move (X) (Double Precision)":
-                    moveOperation(near, onePixel, 0.0d, 0.0d, p, blockDisplayID, true);
-                    break;
-                case "Move (Y) (Double Precision)":
-                    moveOperation(near, 0.0d, onePixel, 0.0d, p, blockDisplayID, true);
-                    break;
-                case "Move (Z) (Double Precision)":
-                    moveOperation(near, 0.0d, 0.0d, onePixel, p, blockDisplayID, true);
-                    break;
-                case "Clone Block Display":
-                    cloneOperation(near, p, blockDisplayID);
-                    break;
-                case "Shrink Interaction":
-                    shrinkOperation(near, p, blockDisplayID);
-                    break;
-                case "Ray Drag":
-                    raydragOperation(near, event.getRightClicked(), p, blockDisplayID);
-                    break;
-                default:
+                case "Move (X)" -> moveOperation(near, onePixel, 0.0d, 0.0d, p, blockDisplayID, false);
+                case "Move (Y)" -> moveOperation(near, 0.0d, onePixel, 0.0d, p, blockDisplayID, false);
+                case "Move (Z)" -> moveOperation(near, 0.0d, 0.0d, onePixel, p, blockDisplayID, false);
+                case "Move (X) (Double Precision)" -> moveOperation(near, onePixel, 0.0d, 0.0d, p, blockDisplayID, true);
+                case "Move (Y) (Double Precision)" -> moveOperation(near, 0.0d, onePixel, 0.0d, p, blockDisplayID, true);
+                case "Move (Z) (Double Precision)" -> moveOperation(near, 0.0d, 0.0d, onePixel, p, blockDisplayID, true);
+
+                case "Rotation (X)" -> rotateOperation(near, "x", p, blockDisplayID, deg);
+                case "Rotation (Y)" -> rotateOperation(near, "y", p, blockDisplayID, deg);
+                case "Rotation (Z)" -> rotateOperation(near, "z", p, blockDisplayID, deg);
+                case "Reset Rotation" -> resetRotation(near, blockDisplayID);
+
+                case "Scale (X)" -> scaleOperation(near, "x", p, blockDisplayID, onePixel);
+                case "Scale (Y)" -> scaleOperation(near, "y", p, blockDisplayID, onePixel);
+                case "Scale (Z)" -> scaleOperation(near, "z", p, blockDisplayID, onePixel);
+                case "Shrink Interaction" -> shrinkOperation(near, p, blockDisplayID);
+
+                case "Brightness (Sky)" -> brightnessOperation(near, "sky", p, blockDisplayID);
+                case "Brightness (Block)" -> brightnessOperation(near, "block", p, blockDisplayID);
+
+                case "Delete" -> deleteOperation(near, blockDisplayID);
+                case "Clone Block Display" -> cloneOperation(near, p, blockDisplayID);
+                case "Ray Drag" -> raydragOperation(near, event.getRightClicked(), p, blockDisplayID);
+                default ->  {}
             }
         }
     }
@@ -411,6 +366,38 @@ public class MainListener implements Listener {
             return;
         }
         event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onPlaceInItemFrame(PlayerInteractEntityEvent event) {
+        if (event.getRightClicked() instanceof ItemFrame) {
+            Player p = event.getPlayer();
+            try {
+                boolean hasTool = Arrays.stream(p.getInventory().getContents())
+                        .filter(Objects::nonNull)
+                        .filter(ItemStack::hasItemMeta)
+                        .anyMatch(item -> p.getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(toolKey, dataType));
+                if (!hasTool) return;
+            } catch (Exception e) {
+                return;
+            }
+            event.setCancelled(true);
+            p.updateInventory();
+        }
+    }
+
+    @EventHandler
+    public void onDropTool(PlayerDropItemEvent event) {
+        Player p = event.getPlayer();
+        if (!p.hasPermission("bde.tools")) return;
+        try {
+            boolean didToolDropped = event.getItemDrop().getItemStack().getItemMeta().getPersistentDataContainer().has(toolKey, dataType);
+            if (!didToolDropped) return;
+        } catch (Exception e) {
+            return;
+        }
+        event.setCancelled(true);
+        p.updateInventory();
     }
 
     @EventHandler
