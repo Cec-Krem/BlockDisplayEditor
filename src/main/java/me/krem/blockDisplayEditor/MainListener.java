@@ -111,14 +111,14 @@ public class MainListener implements Listener {
             if (entity instanceof Interaction it
                     && entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
                 float width = it.getInteractionWidth();
-                if (!player.isSneaking() && width > onePixel) {
-                    it.setInteractionWidth(width - onePixel);
-                    it.teleport(it.getLocation().clone().add(-halfPixel,0.0f, -halfPixel));
+                if (!player.isSneaking() && width > halfPixel) {
+                    it.setInteractionWidth(width - halfPixel);
+                    it.teleport(it.getLocation().clone().add(-halfPixel/2,0.0f, -halfPixel/2));
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(
                             ChatColor.RED + "Set interaction width to " + it.getInteractionWidth()));
                 } else if (player.isSneaking() && width < 2.0f) {
-                    it.setInteractionWidth(width + onePixel);
-                    it.teleport(it.getLocation().clone().add(halfPixel,0.0f, halfPixel));
+                    it.setInteractionWidth(width + halfPixel);
+                    it.teleport(it.getLocation().clone().add(halfPixel/2,0.0f, halfPixel/2));
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacy(
                             ChatColor.GREEN + "Set interaction width to " + it.getInteractionWidth()));
                 } else return;
