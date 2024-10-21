@@ -11,7 +11,7 @@ This plugin uses 1.20 block displays and interactions.
 - /bde info : get informations about the plugin.
 
 ## Tools
-Sneaking reverses the process of tools, except for the rotation reset, clone, drag and deletion tool.
+Sneaking reverses the process of tools, except for the rotation reset, clone, drag, lock and deletion tool.
 - Move (X,Y,Z) : works as if you were teleporting the block display 1 pixel away in the given axis (1/16 of a block).
 - Rotation (X,Y,Z) : rotates the block display according to the given axis. The use of quaternions prevents gimbal locks, but can feel unusual to new quaternions users.
 - Scale (X,Y,Z) : changes the scale of the block display in the given axis. Max size is 5 and minimum is -5 (yes, reversed blocks work). Changes half a pixel by half a pixel (1/32 of a block).
@@ -22,6 +22,7 @@ Sneaking reverses the process of tools, except for the rotation reset, clone, dr
 - Delete : self-explanatory, deletes the aimed block display (and interaction).
 - Shrink Interaction : reduce or expand the interaction hitbox (1/32 of a block to 2 blocks wide).
 - Ray Drag : moves the clicked block display (with Double Precision, so 1/32 of a block) wherever you look at. Good to move a block display on greater distances.
+- Lock/Unlock : locks or unlocks a block display ; when locked, the block display cannot be modified or deleted with tools or commands (from this plugin).
 
 ## Permissions
 Every command as well as the tools need permissions to be used. Everything is detailed in the plugin.yml.
