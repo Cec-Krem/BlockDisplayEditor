@@ -10,25 +10,26 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.persistence.PersistentDataType;
 
 public enum ToolType {
-    MOVE_X(0,Material.TIPPED_ARROW, "Move (X)", PotionType.HEALING),
-    MOVE_Y(1,Material.TIPPED_ARROW, "Move (Y)", PotionType.SWIFTNESS),
-    MOVE_Z(2,Material.TIPPED_ARROW, "Move (Z)", PotionType.LUCK),
-    ROTATION_X(3,Material.IRON_INGOT, "Rotation (X)"),
-    ROTATION_Y(4,Material.COPPER_INGOT, "Rotation (Y)"),
-    ROTATION_Z(5,Material.GOLD_INGOT, "Rotation (Z)"),
-    RESET_ROTATION(8,Material.NETHERITE_INGOT, "Reset Rotation"),
-    SCALE_X(18,Material.BRICK, "Scale (X)"),
-    SCALE_Y(19,Material.NETHER_BRICK, "Scale (Y)"),
-    SCALE_Z(20,Material.NETHERITE_SCRAP, "Scale (Z)"),
-    SHRINK_INTERACTION(21,Material.PRISMARINE_CRYSTALS, "Shrink Interaction"),
-    RAY_DRAG(22,Material.STRUCTURE_VOID, "Ray Drag"),
-    CLONE_BLOCK_DISPLAY(26,Material.MAGMA_CREAM, "Clone Block Display"),
-    MOVE_X_DOUBLE_PREC(27,Material.AMETHYST_SHARD, "Move (X) (Double Precision)"),
-    MOVE_Y_DOUBLE_PREC(28,Material.PRISMARINE_SHARD, "Move (Y) (Double Precision)"),
-    MOVE_Z_DOUBLE_PREC(29,Material.EMERALD, "Move (Z) (Double Precision)"),
-    BRIGHTNESS_BLOCK(30,Material.LIGHT, "Brightness (Block)"),
-    BRIGHTNESS_SKY(31,Material.NETHER_STAR, "Brightness (Sky)"),
-    DELETE(35,Material.BARRIER, "Delete");
+    MOVE_X              (0, Material.TIPPED_ARROW,          "Move (X)", PotionType.HEALING),
+    MOVE_Y              (1, Material.TIPPED_ARROW,          "Move (Y)", PotionType.SWIFTNESS),
+    MOVE_Z              (2, Material.TIPPED_ARROW,          "Move (Z)", PotionType.LUCK),
+    ROTATION_X          (3, Material.IRON_INGOT,            "Rotation (X)"),
+    ROTATION_Y          (4, Material.COPPER_INGOT,          "Rotation (Y)"),
+    ROTATION_Z          (5, Material.GOLD_INGOT,            "Rotation (Z)"),
+    RESET_ROTATION      (8, Material.NETHERITE_INGOT,       "Reset Rotation"),
+    SCALE_X             (18,Material.BRICK,                 "Scale (X)"),
+    SCALE_Y             (19,Material.NETHER_BRICK,          "Scale (Y)"),
+    SCALE_Z             (20,Material.NETHERITE_SCRAP,       "Scale (Z)"),
+    SHRINK_INTERACTION  (21,Material.PRISMARINE_CRYSTALS,   "Shrink Interaction"),
+    RAY_DRAG            (22,Material.STRUCTURE_VOID,        "Ray Drag"),
+    CLONE_BLOCK_DISPLAY (26,Material.MAGMA_CREAM,           "Clone Block Display"),
+    MOVE_X_DOUBLE_PREC  (27,Material.AMETHYST_SHARD,        "Move (X) (Double Precision)"),
+    MOVE_Y_DOUBLE_PREC  (28,Material.PRISMARINE_SHARD,      "Move (Y) (Double Precision)"),
+    MOVE_Z_DOUBLE_PREC  (29,Material.EMERALD,               "Move (Z) (Double Precision)"),
+    BRIGHTNESS_BLOCK    (30,Material.LIGHT,                 "Brightness (Block)"),
+    BRIGHTNESS_SKY      (31,Material.NETHER_STAR,           "Brightness (Sky)"),
+    LOCK                (32,Material.TRIPWIRE_HOOK,         "Lock/Unlock Block Display"),
+    DELETE              (35,Material.BARRIER,               "Delete");
 
     private final Material material;
     private final String displayName;
