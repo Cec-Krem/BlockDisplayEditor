@@ -17,20 +17,25 @@ import java.util.UUID;
 public class CommandProcessor implements CommandExecutor {
     private final NamespacedKey toolKey;
     private final NamespacedKey blockKey;
+    private final NamespacedKey lockKey;
     private final PersistentDataType<String, String> blockDataType = PersistentDataType.STRING;
+    private final PersistentDataType<Byte, Boolean> isBDLocked = PersistentDataType.BOOLEAN;
+
     private final HashMap<UUID, ItemStack[]> savedInventories = new HashMap<>();
     private final HashMap<UUID, Boolean> hasTools = new HashMap<>();
     private final String logo = ChatColor.DARK_GRAY + "[" + ChatColor.AQUA + "BlockDisplayEditor" + ChatColor.DARK_GRAY + "] ";
     private final BlockDisplayEditor plugin;
-    private final Particle boundaries = Particle.COMPOSTER;
 
     public CommandProcessor(BlockDisplayEditor plugin) {
         this.plugin = plugin;
         this.toolKey = new NamespacedKey(plugin, "BDE_Tool");
         this.blockKey = new NamespacedKey(plugin, "BDE_Display");
+        this.lockKey = new NamespacedKey(plugin, "BDE_Locked_Display");
     }
 
-    private void drawParticles(Player player, Location location, double width, double height, double n) {
+    private void drawParticles(Player player, Location location, double width, double height, double n, boolean isLocked) {
+        Particle boundaries = Particle.COMPOSTER;
+        if (isLocked) boundaries = Particle.SCRAPE;
         double halfWidth = width / 2;
         int yStep = height > 0 ? 1 : -1;
         double maxXZ = width * n;
@@ -47,7 +52,7 @@ public class CommandProcessor implements CommandExecutor {
             player.spawnParticle(boundaries, origin.clone().add(0.0d, height, xz / n), 1, 0.0d, 0.0d, 0.0d, 0.0d);
             player.spawnParticle(boundaries, origin.clone().add(width, height, xz / n), 1, 0.0d, 0.0d, 0.0d, 0.0d);
         }
-        for (int y = 0; (Math.abs(y) < maxY); y += yStep) {
+        for (int y = yStep; (Math.abs(y) < Math.abs(maxY-0.5d)); y += yStep) {
             player.spawnParticle(boundaries, origin.clone().add(0.0d, y / n, 0.0d), 1, 0.0d, 0.0d, 0.0d, 0.0d);
             player.spawnParticle(boundaries, origin.clone().add(0.0d, y / n, width), 1, 0.0d, 0.0d, 0.0d, 0.0d);
             player.spawnParticle(boundaries, origin.clone().add(width, y / n, 0.0d), 1, 0.0d, 0.0d, 0.0d, 0.0d);
@@ -87,7 +92,8 @@ public class CommandProcessor implements CommandExecutor {
                 for (Entity entity : nearbyInteractions) {
                     Interaction interaction = (Interaction) entity;
                     Location location = interaction.getLocation();
-                    drawParticles(player, location, interaction.getInteractionWidth(), interaction.getInteractionHeight(), 2.0d);
+                    boolean isLocked = interaction.getPersistentDataContainer().getOrDefault(lockKey, isBDLocked, false);
+                    drawParticles(player, location, interaction.getInteractionWidth(), interaction.getInteractionHeight(), 2.0d, isLocked);
                 }
             }
         }.runTaskTimer(plugin, 0, 5);
@@ -179,6 +185,7 @@ public class CommandProcessor implements CommandExecutor {
         boolean deleted = false;
         for (Entity entity : nearbyEntities) {
             if (entity instanceof BlockDisplay || entity instanceof Interaction) {
+                if (entity.getPersistentDataContainer().getOrDefault(lockKey, isBDLocked, false)) continue;
                 entity.remove();
                 deleted = true;
             }
