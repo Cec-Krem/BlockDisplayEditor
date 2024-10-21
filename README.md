@@ -22,7 +22,7 @@ Sneaking reverses the process of tools, except for the rotation reset, clone, dr
 - Delete : self-explanatory, deletes the aimed block display (and interaction).
 - Shrink Interaction : reduce or expand the interaction hitbox (1/32 of a block to 2 blocks wide).
 - Ray Drag : moves the clicked block display (with Double Precision, so 1/32 of a block) wherever you look at. Good to move a block display on greater distances.
-- Lock/Unlock : locks or unlocks a block display ; when locked, the block display cannot be modified or deleted with tools or commands (from this plugin).
+- Lock/Unlock : locks or unlocks a block display ; when locked, the block display cannot be modified or deleted with tools or commands (from this plugin) and makes different particles when players have the tools on them (scrape particles).
 
 ## Permissions
 Every command as well as the tools need permissions to be used. Everything is detailed in the plugin.yml.
