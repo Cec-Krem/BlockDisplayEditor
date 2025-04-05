@@ -7,12 +7,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.profile.PlayerProfile;
+import org.bukkit.profile.PlayerTextures;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 
 public class CommandProcessor implements CommandExecutor {
     private final NamespacedKey toolKey;
@@ -31,6 +34,28 @@ public class CommandProcessor implements CommandExecutor {
         this.toolKey = new NamespacedKey(plugin, "BDE_Tool");
         this.blockKey = new NamespacedKey(plugin, "BDE_Display");
         this.lockKey = new NamespacedKey(plugin, "BDE_Locked_Display");
+    }
+
+    Material[] heads = {Material.PLAYER_HEAD, Material.SKELETON_SKULL, Material.WITHER_SKELETON_SKULL,
+                        Material.DRAGON_HEAD, Material.CREEPER_HEAD, Material.ZOMBIE_HEAD, Material.PIGLIN_HEAD};
+
+    private static PlayerProfile getProfile(String url) {
+        PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID()); // Get a new player profile
+        PlayerTextures textures = profile.getTextures();
+        URL urlObject;
+        try {
+            urlObject = new URL(url);
+        } catch (MalformedURLException exception) {
+            throw new RuntimeException("Invalid URL", exception);
+        }
+        textures.setSkin(urlObject); // Set the skin of the player profile to the URL
+        profile.setTextures(textures); // Set the textures back to the profile
+        return profile;
+    }
+
+    public static URL getUrlFromBase64(String base64) throws MalformedURLException {
+        String decoded = new String(Base64.getDecoder().decode(base64));
+        return new URL(decoded.substring("{\"textures\":{\"SKIN\":{\"url\":\"".length(), decoded.length() - "\"}}}".length()));
     }
 
     private void drawParticles(Player player, Location location, double width, double height, double n, boolean isLocked) {
@@ -113,7 +138,16 @@ public class CommandProcessor implements CommandExecutor {
         }
 
         switch (args[0].toLowerCase()) {
-            case "create" -> handleCreateCommand(player, args);
+            case "create" -> {
+                try {
+                    handleCreateCommand(player, args);
+                } catch (Exception e) {
+                    sender.sendMessage(logo + ChatColor.DARK_RED + "You have to either enter an URL or encrypted texture. For example, the following will work :\n" +
+                            ChatColor.AQUA + "https://textures.minecraft.net/texture/18813764b2abc94ec3c3bc67b9147c21be850cdf996679703157f4555997ea63\n" +
+                            ChatColor.YELLOW + "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNWZiNzFlNzllZDVlOWRiYzUwNWY0N2RlMzQ0ZWFkZDk1ODg5NzNhZGU5Y2FiNzc2M2M0YTU5ZjgyMTMwZDMifX19\n" +
+                            ChatColor.RED + "The second one is actually the Tag 'value' from 'properties' : it can be, for example, found in /give commands.");
+                }
+            }
             case "delete" -> handleDeleteCommand(player, args);
             case "tools" -> handleToolsCommand(player);
             case "info" -> handleInfoCommand(sender);
@@ -126,14 +160,14 @@ public class CommandProcessor implements CommandExecutor {
         player.sendMessage("");
         player.sendMessage(logo + ChatColor.GRAY + "Available commands :");
         player.sendMessage(ChatColor.AQUA + "/bde " + ChatColor.GRAY + ": display this list.");
-        player.sendMessage(ChatColor.AQUA + "/bde create <block>" + ChatColor.GRAY + ": create a block display at your location.");
+        player.sendMessage(ChatColor.AQUA + "/bde create <block> [URL/Base64]" + ChatColor.GRAY + ": create a block display at your location. Can be a player head with skin, but then you MUST give a valid URL : raw/normal or as Base64 (like in the vanilla way of doing). minecraft-heads.com actually gives this data in the 'for developers' section of a head.");
         player.sendMessage(ChatColor.AQUA + "/bde delete <r> " + ChatColor.GRAY + ": delete block displays within radius r (max radius is 12 blocks, default is 3).");
         player.sendMessage(ChatColor.AQUA + "/bde tools " + ChatColor.GRAY + ": get a set of editing tools.");
         player.sendMessage(ChatColor.AQUA + "/bde info " + ChatColor.GRAY + ": get the plugin version.");
         player.sendMessage("");
     }
 
-    private void handleCreateCommand(Player player, String[] args) {
+    private void handleCreateCommand(Player player, String[] args) throws MalformedURLException {
         if (!player.hasPermission("bde.create")) {
             player.sendMessage(logo + ChatColor.DARK_RED + "Sorry, but you don't have permission to do that.");
             return;
@@ -148,6 +182,34 @@ public class CommandProcessor implements CommandExecutor {
             material = Material.matchMaterial(args[1]);
             if (material == null || !material.isBlock()) {
                 player.sendMessage(logo + ChatColor.DARK_RED + "Invalid block.");
+                return;
+            }
+            if (Arrays.asList(heads).contains(material)) {
+                ItemStack itemMaterial = material.asItemType().createItemStack();
+                String newID = UUID.randomUUID().toString();
+                Interaction interaction = player.getWorld().spawn(interactionLoc, Interaction.class);
+                ItemDisplay itemDisplay = player.getWorld().spawn(blockLoc.add(0.5,0.0, 0.5), ItemDisplay.class);
+
+                if (args.length > 2 && material.equals(Material.PLAYER_HEAD)) {
+                    // set code to change itemMaterial into wanted head skin
+                    if (args[2].contains("://")) { // cheap method to check that it's not Base64...
+                        PlayerProfile profile = getProfile(args[2]);
+                        SkullMeta meta = (SkullMeta) itemMaterial.getItemMeta();
+                        meta.setOwnerProfile(profile);
+                        itemMaterial.setItemMeta(meta);
+                    } else {
+                        URL urlFromBase64 = getUrlFromBase64(args[2]);
+                        PlayerProfile profile = getProfile(urlFromBase64.toString());
+                        SkullMeta meta = (SkullMeta) itemMaterial.getItemMeta();
+                        meta.setOwnerProfile(profile);
+                        itemMaterial.setItemMeta(meta);
+                    }
+                }
+
+                itemDisplay.setItemStack(itemMaterial);
+                itemDisplay.getPersistentDataContainer().set(blockKey, blockDataType, newID);
+                interaction.getPersistentDataContainer().set(blockKey, blockDataType, newID);
+                player.sendMessage(logo + ChatColor.GREEN + "Block display created at " + ChatColor.YELLOW + blockLoc.getBlockX() + " " + blockLoc.getBlockY() + " " + blockLoc.getBlockZ());
                 return;
             }
         }
