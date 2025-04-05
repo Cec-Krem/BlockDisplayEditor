@@ -9,6 +9,9 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
@@ -71,8 +74,28 @@ public class MainListener implements Listener {
         Vector3f scale = blockDisplay.getTransformation().getScale();
         return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), rotations.getFirst(), scale, rotations.getLast());
     }
+    public Transformation rotQuaternionXYZ(float angle, ItemDisplay blockDisplay, String axis) {
+        List<Quaternionf> rotations = new ArrayList<>();
+        // axis must be "x" "y" or "z"
+        switch (axis) {
+            case "x" -> rotations = Arrays.asList(blockDisplay.getTransformation().getLeftRotation().rotateX(angle),
+                    blockDisplay.getTransformation().getRightRotation().rotateX(angle));
+            case "y" -> rotations = Arrays.asList(blockDisplay.getTransformation().getLeftRotation().rotateY(angle),
+                    blockDisplay.getTransformation().getRightRotation().rotateY(angle));
+            case "z" -> rotations = Arrays.asList(blockDisplay.getTransformation().getLeftRotation().rotateZ(angle),
+                    blockDisplay.getTransformation().getRightRotation().rotateZ(angle));
+        }
+        Vector3f scale = blockDisplay.getTransformation().getScale();
+        return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), rotations.getFirst(), scale, rotations.getLast());
+    }
 
     public Transformation resetRotQuaternion(BlockDisplay blockDisplay) {
+        return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f),
+                new Quaternionf(0.0f, 0.0f, 0.0f, 1.0f),
+                blockDisplay.getTransformation().getScale(),
+                new Quaternionf(0.0f, 0.0f, 0.0f, 1.0f));
+    }
+    public Transformation resetRotQuaternion(ItemDisplay blockDisplay) {
         return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f),
                 new Quaternionf(0.0f, 0.0f, 0.0f, 1.0f),
                 blockDisplay.getTransformation().getScale(),
@@ -85,10 +108,16 @@ public class MainListener implements Listener {
         float[] scale = {blockDisplay.getTransformation().getScale().x, blockDisplay.getTransformation().getScale().y, blockDisplay.getTransformation().getScale().z};
         return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, new Vector3f(scale[0] + scalarX, scale[1] + scalarY, scale[2] + scalarZ), rightRot);
     }
+    public Transformation scaleBlock(float scalarX, float scalarY, float scalarZ, ItemDisplay blockDisplay) {
+        Quaternionf leftRot = blockDisplay.getTransformation().getLeftRotation();
+        Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation();
+        float[] scale = {blockDisplay.getTransformation().getScale().x, blockDisplay.getTransformation().getScale().y, blockDisplay.getTransformation().getScale().z};
+        return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, new Vector3f(scale[0] + scalarX, scale[1] + scalarY, scale[2] + scalarZ), rightRot);
+    }
 
     public void moveOperation(List<Entity> blockToMove, double x, double y, double z, Player player, String blockDisplayID) {
         for (Entity entity : blockToMove) {
-            if ((entity instanceof Interaction || entity instanceof BlockDisplay)
+            if ((entity instanceof Interaction || entity instanceof BlockDisplay || entity instanceof ItemDisplay)
                     && entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
                 byte sneak = (byte) (player.isSneaking() ? -1 : 1);
                 entity.teleport(entity.getLocation().add(x * sneak, y * sneak, z * sneak));
@@ -138,12 +167,39 @@ public class MainListener implements Listener {
                         break;
                 }
             }
+            if (entity instanceof ItemDisplay bd && (entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))) {
+                if (bd.getBrightness() == null) bd.setBrightness(new Display.Brightness(0, 0));
+                int[] bdBrightness = {bd.getBrightness().getBlockLight(), bd.getBrightness().getSkyLight()};
+                switch (type) {
+                    case "block":
+                        if (bdBrightness[0] + sneak >= 0 && bdBrightness[0] + sneak <= 15) {
+                            bd.setBrightness(new Display.Brightness(bdBrightness[0] + sneak, bdBrightness[1]));
+                            player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
+                                    TextComponent.fromLegacy(color + "Set block brightness to " + bd.getBrightness().getBlockLight()));
+                        }
+                        break;
+                    case "sky":
+                        if (bdBrightness[1] + sneak >= 0 && bdBrightness[1] + sneak <= 15) {
+                            bd.setBrightness(new Display.Brightness(bdBrightness[0], bdBrightness[1] + sneak));
+                            player.spigot().sendMessage(ChatMessageType.ACTION_BAR,
+                                    TextComponent.fromLegacy(color + "Set sky brightness to " + bd.getBrightness().getSkyLight()));
+                        }
+                        break;
+                }
+            }
         }
     }
 
     public void rotateOperation(List<Entity> blockToRotate, String axis, Player player, String blockDisplayID, float angle) {
         for (Entity entity : blockToRotate) {
             if (entity instanceof BlockDisplay bd
+                    && entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+                byte sneak = (byte) (player.isSneaking() ? -1 : 1);
+                // axis must be "x" "y" or "z"
+                bd.setTransformation(rotQuaternionXYZ(angle * sneak, bd, axis));
+                bd.setTransformation(rotQuaternionXYZ(angle * sneak, bd, axis));
+            }
+            else if (entity instanceof ItemDisplay bd
                     && entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
                 byte sneak = (byte) (player.isSneaking() ? -1 : 1);
                 // axis must be "x" "y" or "z"
@@ -158,6 +214,9 @@ public class MainListener implements Listener {
             if (entity instanceof BlockDisplay bd
                     && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))
                 bd.setTransformation(resetRotQuaternion(bd));
+            if (entity instanceof ItemDisplay bd
+                    && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))
+                bd.setTransformation(resetRotQuaternion(bd));
         }
     }
 
@@ -169,6 +228,9 @@ public class MainListener implements Listener {
             if (entity instanceof Interaction it
                     && it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))
                 it.remove();
+            if (entity instanceof ItemDisplay id
+                    && id.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))
+                id.remove();
         }
     }
 
@@ -181,6 +243,15 @@ public class MainListener implements Listener {
                 BlockDisplay d = player.getWorld().spawn(bdLoc, BlockDisplay.class);
                 d.getPersistentDataContainer().set(blockKey, blockDataType, newID);
                 d.setBlock(bd.getBlock());
+                d.setTransformation(bd.getTransformation());
+                d.setBrightness(bd.getBrightness());
+            }
+            if (entity instanceof ItemDisplay bd
+                    && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+                Location bdLoc = bd.getLocation().clone().add(0.0d, bd.getTransformation().getScale().y, 0.0d);
+                ItemDisplay d = player.getWorld().spawn(bdLoc, ItemDisplay.class);
+                d.getPersistentDataContainer().set(blockKey, blockDataType, newID);
+                d.setItemStack(bd.getItemStack());
                 d.setTransformation(bd.getTransformation());
                 d.setBrightness(bd.getBrightness());
             }
@@ -202,7 +273,7 @@ public class MainListener implements Listener {
         for (Entity entity : blockToScale) {
             if (entity instanceof BlockDisplay bd && entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
                 Vector3f bdscale = bd.getTransformation().getScale();
-                switch(direction) {
+                switch (direction) {
                     case "x":
                         if (Math.abs(bdscale.x + step) > 5.0f) return;
                         bd.setTransformation(scaleBlock(step, 0.0f, 0.0f, bd));
@@ -221,10 +292,52 @@ public class MainListener implements Listener {
                         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent
                                 .fromLegacy(color + "Z Scale : " + bd.getTransformation().getScale().z));
                         break;
+                    case "all":
+                        if (Math.abs(bdscale.x + step) > 5.0f) return;
+                        if (Math.abs(bdscale.y + step) > 5.0f) return;
+                        if (Math.abs(bdscale.z + step) > 5.0f) return;
+                        bd.setTransformation(scaleBlock(step, step, step, bd));
+                        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent
+                                .fromLegacy(color + "XYZ Scale : " + bd.getTransformation().getScale().x
+                                        + " ; " + bd.getTransformation().getScale().y + " ; "
+                                        + bd.getTransformation().getScale().z));
                 }
-            } else if (direction.equals("y") && entity instanceof Interaction it
-                    && it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)
-                    && (Math.abs(it.getInteractionHeight() + step) < 5.0f)) it.setInteractionHeight(it.getInteractionHeight() + step);
+            }
+            if (entity instanceof ItemDisplay id && entity.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+                Vector3f idscale = id.getTransformation().getScale();
+                switch(direction) {
+                    case "x":
+                        if (Math.abs(idscale.x + step) > 5.0f) return;
+                        id.setTransformation(scaleBlock(step, 0.0f, 0.0f, id));
+                        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent
+                                .fromLegacy(color + "X Scale : " + id.getTransformation().getScale().x));
+                        break;
+                    case "y":
+                        if (Math.abs(idscale.y + step) > 5.0f) return;
+                        id.setTransformation(scaleBlock(0.0f, step, 0.0f, id));
+                        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent
+                                .fromLegacy(color + "Y Scale : " + id.getTransformation().getScale().y));
+                        break;
+                    case "z":
+                        if (Math.abs(idscale.z + step) > 5.0f) return;
+                        id.setTransformation(scaleBlock(0.0f, 0.0f, step, id));
+                        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent
+                                .fromLegacy(color + "Z Scale : " + id.getTransformation().getScale().z));
+                        break;
+                    case "all":
+                        if (Math.abs(idscale.x + step) > 5.0f) return;
+                        if (Math.abs(idscale.y + step) > 5.0f) return;
+                        if (Math.abs(idscale.z + step) > 5.0f) return;
+                        id.setTransformation(scaleBlock(step, step, step, id));
+                        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent
+                                .fromLegacy(color + "XYZ Scale : " + id.getTransformation().getScale().x
+                                        + " ; " + id.getTransformation().getScale().y + " ; "
+                                        + id.getTransformation().getScale().z));
+                }
+            }
+            if ((direction.equals("y") || direction.equals("all")) && entity instanceof Interaction it
+                && it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)
+                && (Math.abs(it.getInteractionHeight() + step) < 5.0f)) it.setInteractionHeight(it.getInteractionHeight() + step);
         }
     }
 
@@ -300,7 +413,7 @@ public class MainListener implements Listener {
             String blockDisplayID = event.getRightClicked().getPersistentDataContainer().get(blockKey, blockDataType);
             String itemName = p.getInventory().getItemInMainHand().getItemMeta().getDisplayName();
             List<Entity> near = new ArrayList<>(p.getNearbyEntities(12.0d, 12.0d, 12.0d).stream()
-                    .filter(e -> e instanceof BlockDisplay || e instanceof Interaction)
+                    .filter(e -> e instanceof BlockDisplay || e instanceof Interaction || e instanceof ItemDisplay)
                     .toList());
             near.removeIf(e -> e.getPersistentDataContainer().isEmpty());
             if (!itemName.equals("Lock/Unlock Block Display")
@@ -324,6 +437,7 @@ public class MainListener implements Listener {
                 case "Scale (X)" -> scaleOperation(near, "x", p, blockDisplayID, halfPixel);
                 case "Scale (Y)" -> scaleOperation(near, "y", p, blockDisplayID, halfPixel);
                 case "Scale (Z)" -> scaleOperation(near, "z", p, blockDisplayID, halfPixel);
+                case "Scale (All)" -> scaleOperation(near, "all", p, blockDisplayID, halfPixel);
                 case "Shrink Interaction" -> shrinkOperation(near, p, blockDisplayID);
 
                 case "Brightness (Sky)" -> brightnessOperation(near, "sky", p, blockDisplayID);
@@ -343,11 +457,8 @@ public class MainListener implements Listener {
         Player p = event.getPlayer();
         if (!p.hasPermission("bde.tools")) return;
         try {
-            boolean hasTool = Arrays.stream(p.getInventory().getContents())
-                    .filter(Objects::nonNull)
-                    .filter(ItemStack::hasItemMeta)
-                    .anyMatch(item -> p.getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(toolKey, dataType));
-            if (!hasTool) return;
+            boolean isPlacingATool = p.getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(toolKey, dataType);
+            if (!isPlacingATool) return;
         } catch (Exception e) {
             return;
         }
@@ -359,10 +470,7 @@ public class MainListener implements Listener {
         if (event.getRightClicked() instanceof ItemFrame) {
             Player p = event.getPlayer();
             try {
-                boolean hasTool = Arrays.stream(p.getInventory().getContents())
-                        .filter(Objects::nonNull)
-                        .filter(ItemStack::hasItemMeta)
-                        .anyMatch(item -> p.getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(toolKey, dataType));
+                boolean hasTool = p.getInventory().getItemInMainHand().getItemMeta().getPersistentDataContainer().has(toolKey, dataType);
                 if (!hasTool) return;
             } catch (Exception e) {
                 return;
@@ -401,5 +509,77 @@ public class MainListener implements Listener {
         }
         shuffleInv(p.getInventory(), p.getInventory().getContents());
         event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onDeath(PlayerDeathEvent event) {
+        Player p = event.getEntity().getPlayer();
+        try {
+            // Looking for drops makes it KeepInventory-compatible
+            if (p.hasPermission("bde.tools")
+                 && event.getDrops().stream().anyMatch(item -> item.getItemMeta().getPersistentDataContainer().has(toolKey, dataType)))
+            {
+                p.performCommand("bde tools");
+            }
+            for (int i = 0 ; i < p.getInventory().getSize() ; i++) {
+                if (event.getDrops().get(i).getItemMeta().getPersistentDataContainer().has(toolKey, dataType)) {
+                    event.getDrops().get(i).setAmount(0);
+                }
+            }
+        } catch (Exception e) {
+            return;
+        }
+    }
+
+    @EventHandler
+    public void onMoveToolToContainer(InventoryClickEvent event) {
+        if (event.getClick().isShiftClick()) {
+            Inventory clicked = event.getClickedInventory();
+            if (clicked == event.getWhoClicked().getInventory()) {
+                // The item is being shift clicked from the bottom to the top
+                ItemStack clickedOn = event.getCurrentItem();
+                try {
+                    if (clickedOn != null && (clickedOn.getItemMeta().getPersistentDataContainer().has(toolKey, dataType))) {
+                        event.setCancelled(true);
+                        return;
+                    }
+                } catch (Exception e) {
+                    return;
+                }
+            }
+        }
+        Inventory clicked = event.getClickedInventory();
+        if (clicked != event.getWhoClicked().getInventory()) {
+            // The cursor item is going into the top inventory
+            ItemStack onCursor = event.getCursor();
+            try {
+                if (onCursor != null && (onCursor.getItemMeta().getPersistentDataContainer().has(toolKey, dataType))) {
+                    event.setCancelled(true);
+                    return;
+                }
+            } catch (Exception e) {
+                return;
+            }
+        }
+    }
+
+    @EventHandler
+    public void onInventoryDragToContainer(InventoryDragEvent event) {
+        ItemStack dragged = event.getOldCursor(); // This is the item that is being dragged
+        try {
+            if (dragged.getItemMeta().getPersistentDataContainer().has(toolKey, dataType)) {
+                int inventorySize = event.getInventory().getSize(); // The size of the inventory, for reference
+
+                // Now we go through all the slots and check if the slot is inside our inventory (using the inventory size as reference)
+                for (int i : event.getRawSlots()) {
+                    if (i < inventorySize) {
+                        event.setCancelled(true);
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            return;
+        }
     }
 }
