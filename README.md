@@ -5,7 +5,7 @@ This plugin uses 1.20 block displays and interactions.
 # Features
 ## Commands
 - /bde : get a list of every command
-- /bde create <block> : create a block display (attached to an interaction box) (by default a grass block)
+- /bde create <block> [URL/Base64] : create a block display at your location. Can be a player head with skin, but then you MUST give a valid URL : raw/normal or as Base64 (like in the vanilla way of doing). minecraft-heads.com actually gives this data in the 'for developers' section of a head.
 - /bde delete <radius> : delete every block display in the given radius (max radius : 12 blocks, not recommended to delete precise block displays).
 - /bde tools : get a set of tools to edit block displays (F (or your swap hands key bind if different) to switch between additional tools). Execute this command again to get your inventory back.
 - /bde info : get informations about the plugin.
@@ -14,7 +14,7 @@ This plugin uses 1.20 block displays and interactions.
 Sneaking reverses the process of tools, except for the rotation reset, clone, drag, lock and deletion tool.
 - Move (X,Y,Z) : works as if you were teleporting the block display 1 pixel away in the given axis (1/16 of a block).
 - Rotation (X,Y,Z) : rotates the block display according to the given axis. The use of quaternions prevents gimbal locks, but can feel unusual to new quaternions users.
-- Scale (X,Y,Z) : changes the scale of the block display in the given axis. Max size is 5 and minimum is -5 (yes, reversed blocks work). Changes half a pixel by half a pixel (1/32 of a block).
+- Scale (X,Y,Z,All) : changes the scale of the block display in the given axis. Max size is 5 and minimum is -5 (yes, reversed blocks work). Changes half a pixel by half a pixel (1/32 of a block).
 - Brightness (Block, Sky) : changes the brightness of the block display, between 0 and 15 for each type of light.
 - Move (X,Y,Z) (Double Precision) : same as the Move tool but teleports the block displays 1/32 of a block (0.5 pixel) away in the given axis.
 - Reset Rotation : self-explanatory, in case you want to reset the rotation.
