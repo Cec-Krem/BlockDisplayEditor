@@ -15,6 +15,7 @@ Sneaking reverses the process of tools, except for the rotation reset, clone, dr
 - Move (X,Y,Z) : works as if you were teleporting the block display 1 pixel away in the given axis (1/16 of a block).
 - Rotation (X,Y,Z) : rotates the block display according to the given axis. The use of quaternions prevents gimbal locks, but can feel unusual to new quaternions users.
 - Scale (X,Y,Z,All) : changes the scale of the block display in the given axis. Max size is 5 and minimum is -5 (yes, reversed blocks work). Changes half a pixel by half a pixel (1/32 of a block).
+- Reset Scale : self-explanatory, resets the scale of the aimed block display (and interaction height goes back to 1).
 - Brightness (Block, Sky) : changes the brightness of the block display, between 0 and 15 for each type of light.
 - Move (X,Y,Z) (Double Precision) : same as the Move tool but teleports the block displays 1/32 of a block (0.5 pixel) away in the given axis.
 - Reset Rotation : self-explanatory, in case you want to reset the rotation.
@@ -25,7 +26,7 @@ Sneaking reverses the process of tools, except for the rotation reset, clone, dr
 - Lock/Unlock : locks or unlocks a block display ; when locked, the block display cannot be modified or deleted with tools or commands (from this plugin) and makes different particles when players have the tools on them (scrape particles).
 
 ## Permissions
-Every command as well as the tools need permissions to be used. Everything is detailed in the plugin.yml.
+Every command as well as the tools need permissions to be used. Everything is detailed in the plugin.yml file.
 
 # Questions
 ## Why is the interaction only moving with the move tool ?
