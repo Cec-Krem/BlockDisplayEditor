@@ -35,6 +35,7 @@ public class MainListener implements Listener {
     private final PersistentDataType<Byte, Boolean> dataType = PersistentDataType.BOOLEAN;
     private final PersistentDataType<Byte, Boolean> isBDLocked = PersistentDataType.BOOLEAN;
     private final PersistentDataType<String, String> blockDataType = PersistentDataType.STRING;
+    private final String logo = ChatColor.DARK_GRAY + "[" + ChatColor.AQUA + "BlockDisplayEditor" + ChatColor.DARK_GRAY + "] ";
     private final float deg = (float) Math.PI / 360; // Half a degree
     private final float onePixel = 0.0625f;
     private final float halfPixel = 0.03125f;
@@ -113,6 +114,17 @@ public class MainListener implements Listener {
         Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation();
         float[] scale = {blockDisplay.getTransformation().getScale().x, blockDisplay.getTransformation().getScale().y, blockDisplay.getTransformation().getScale().z};
         return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, new Vector3f(scale[0] + scalarX, scale[1] + scalarY, scale[2] + scalarZ), rightRot);
+    }
+
+    public Transformation resetScaleBlock(BlockDisplay blockDisplay) {
+        Quaternionf leftRot = blockDisplay.getTransformation().getLeftRotation();
+        Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation();
+        return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, new Vector3f(1.0f, 1.0f, 1.0f), rightRot);
+    }
+    public Transformation resetScaleBlock(ItemDisplay blockDisplay) {
+        Quaternionf leftRot = blockDisplay.getTransformation().getLeftRotation();
+        Quaternionf rightRot = blockDisplay.getTransformation().getRightRotation();
+        return new Transformation(new Vector3f(0.0f, 0.0f, 0.0f), leftRot, new Vector3f(1.0f, 1.0f, 1.0f), rightRot);
     }
 
     public void moveOperation(List<Entity> blockToMove, double x, double y, double z, Player player, String blockDisplayID) {
@@ -341,6 +353,23 @@ public class MainListener implements Listener {
         }
     }
 
+    public void resetScaleOperation(List<Entity> blockToReset, String blockDisplayID) {
+        for (Entity entity : blockToReset) {
+            if (entity instanceof BlockDisplay bd
+                    && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))
+                bd.setTransformation(resetScaleBlock(bd));
+            if (entity instanceof ItemDisplay bd
+                    && bd.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID))
+                bd.setTransformation(resetScaleBlock(bd));
+            if (entity instanceof Interaction it
+                    && it.getPersistentDataContainer().get(blockKey, blockDataType).equals(blockDisplayID)) {
+                it.setInteractionHeight(1.0f);
+                // It's a reset scale. Not a reset shrink. Consider resetting the height a gift.
+                // Let my maths skills be NULL for not getting it right.
+            }
+        }
+    }
+
     public void raydragOperation(List<Entity> near, Entity eventEntity, Player player, String blockDisplayID) {
         UUID pUID = player.getUniqueId();
         isRayDragging.put(pUID, !isRayDragging.getOrDefault(pUID, false));
@@ -408,7 +437,17 @@ public class MainListener implements Listener {
             return;
         }
         if (!p.hasPermission("bde.tools")) {
-            p.sendMessage(ChatColor.DARK_RED + "Sorry, but you don't have the permission to edit block displays. These tools are useless for you.");
+            p.sendMessage(logo + ChatColor.DARK_RED + "Sorry, but you don't have the permission to edit block displays. " +
+                    "These tools are useless for you.\n" +
+                    ChatColor.RED + "Let me get them away so you don't waste this much space in your inventory ;).");
+            for (int i = 0 ; i < p.getInventory().getSize() ; i++) {
+                try {
+                    if (p.getInventory().getItem(i).getItemMeta().getPersistentDataContainer().has(toolKey, dataType)) {
+                        p.getInventory().clear(i);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
         } else {
             String blockDisplayID = event.getRightClicked().getPersistentDataContainer().get(blockKey, blockDataType);
             String itemName = p.getInventory().getItemInMainHand().getItemMeta().getDisplayName();
@@ -418,7 +457,7 @@ public class MainListener implements Listener {
             near.removeIf(e -> e.getPersistentDataContainer().isEmpty());
             if (!itemName.equals("Lock/Unlock Block Display")
                     && event.getRightClicked().getPersistentDataContainer().getOrDefault(lockKey, isBDLocked, false)) {
-                // Don't do anything if the block display is locked
+                // Don't do anything if the block display is locked!
                 return;
             }
             switch (itemName) {
@@ -438,6 +477,7 @@ public class MainListener implements Listener {
                 case "Scale (Y)" -> scaleOperation(near, "y", p, blockDisplayID, halfPixel);
                 case "Scale (Z)" -> scaleOperation(near, "z", p, blockDisplayID, halfPixel);
                 case "Scale (All)" -> scaleOperation(near, "all", p, blockDisplayID, halfPixel);
+                case "Reset Scale" -> resetScaleOperation(near, blockDisplayID);
                 case "Shrink Interaction" -> shrinkOperation(near, p, blockDisplayID);
 
                 case "Brightness (Sky)" -> brightnessOperation(near, "sky", p, blockDisplayID);
@@ -485,7 +525,8 @@ public class MainListener implements Listener {
         Player p = event.getPlayer();
         if (!p.hasPermission("bde.tools")) return;
         try {
-            boolean didToolDropped = event.getItemDrop().getItemStack().getItemMeta().getPersistentDataContainer().has(toolKey, dataType);
+            boolean didToolDropped =
+                    event.getItemDrop().getItemStack().getItemMeta().getPersistentDataContainer().has(toolKey, dataType);
             if (!didToolDropped) return;
         } catch (Exception e) {
             return;
@@ -526,11 +567,11 @@ public class MainListener implements Listener {
                     event.getDrops().get(i).setAmount(0);
                 }
             }
-        } catch (Exception e) {
-            return;
+        } catch (Exception ignored) {
         }
     }
 
+    // Thanks to spigot forums lmao
     @EventHandler
     public void onMoveToolToContainer(InventoryClickEvent event) {
         if (event.getClick().isShiftClick()) {
@@ -555,10 +596,8 @@ public class MainListener implements Listener {
             try {
                 if (onCursor != null && (onCursor.getItemMeta().getPersistentDataContainer().has(toolKey, dataType))) {
                     event.setCancelled(true);
-                    return;
                 }
-            } catch (Exception e) {
-                return;
+            } catch (Exception ignored) {
             }
         }
     }
@@ -578,8 +617,7 @@ public class MainListener implements Listener {
                     }
                 }
             }
-        } catch (Exception e) {
-            return;
+        } catch (Exception ignored) {
         }
     }
 }
