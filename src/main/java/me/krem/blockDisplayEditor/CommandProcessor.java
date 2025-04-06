@@ -195,8 +195,6 @@ public class CommandProcessor implements CommandExecutor {
                         SkullMeta meta = (SkullMeta) itemMaterial.getItemMeta();
                         meta.setOwnerProfile(profile);
                         itemMaterial.setItemMeta(meta);
-                    } else if (!args[2].isEmpty() && args[2].length() < 16) {
-                        //
                     } else {
                         URL urlFromBase64 = getUrlFromBase64(args[2]);
                         PlayerProfile profile = getProfile(urlFromBase64.toString());
