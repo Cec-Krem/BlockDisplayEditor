@@ -5,7 +5,7 @@ This plugin uses 1.20 block displays and interactions.
 # Features
 ## Commands
 - /bde : get a list of every command
-- /bde create <block> {URL/Base64} : create a block display at your location. Can be a player head with skin, but then you MUST give a valid URL : raw/normal or as Base64 (like in the vanilla way of doing). minecraft-heads.com actually gives this data in the 'for developers' section of a head.
+- /bde create <block> <URL/Base64> : create a block display at your location. Can be a player head with skin, but then you MUST give a valid URL : raw/normal or as Base64 (like in the vanilla way of doing). minecraft-heads.com actually gives this data in the 'for developers' section of a head.
 - /bde delete <radius> : delete every block display in the given radius (max radius : 12 blocks, not recommended to delete precise block displays).
 - /bde tools : get a set of tools to edit block displays (F (or your swap hands key bind if different) to switch between additional tools). Execute this command again to get your inventory back.
 - /bde info : get informations about the plugin.
