@@ -27,6 +27,8 @@ public class CommandProcessor implements CommandExecutor {
     private final HashMap<UUID, ItemStack[]> savedInventories = new HashMap<>();
     private final HashMap<UUID, Boolean> hasTools = new HashMap<>();
     private final String logo = ChatColor.DARK_GRAY + "[" + ChatColor.AQUA + "BlockDisplayEditor" + ChatColor.DARK_GRAY + "] ";
+    private final Material[] heads = {Material.PLAYER_HEAD, Material.SKELETON_SKULL, Material.WITHER_SKELETON_SKULL,
+                                        Material.DRAGON_HEAD, Material.CREEPER_HEAD, Material.ZOMBIE_HEAD, Material.PIGLIN_HEAD};
     private final BlockDisplayEditor plugin;
 
     public CommandProcessor(BlockDisplayEditor plugin) {
@@ -35,9 +37,6 @@ public class CommandProcessor implements CommandExecutor {
         this.blockKey = new NamespacedKey(plugin, "BDE_Display");
         this.lockKey = new NamespacedKey(plugin, "BDE_Locked_Display");
     }
-
-    Material[] heads = {Material.PLAYER_HEAD, Material.SKELETON_SKULL, Material.WITHER_SKELETON_SKULL,
-                        Material.DRAGON_HEAD, Material.CREEPER_HEAD, Material.ZOMBIE_HEAD, Material.PIGLIN_HEAD};
 
     private static PlayerProfile getProfile(String url) {
         PlayerProfile profile = Bukkit.createPlayerProfile(UUID.randomUUID()); // Get a new player profile
@@ -143,9 +142,10 @@ public class CommandProcessor implements CommandExecutor {
                     handleCreateCommand(player, args);
                 } catch (Exception e) {
                     sender.sendMessage(logo + ChatColor.DARK_RED + "You have to either enter an URL or encrypted texture. For example, the following will work :\n" +
-                            ChatColor.AQUA + "https://textures.minecraft.net/texture/18813764b2abc94ec3c3bc67b9147c21be850cdf996679703157f4555997ea63\n" +
-                            ChatColor.YELLOW + "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNWZiNzFlNzllZDVlOWRiYzUwNWY0N2RlMzQ0ZWFkZDk1ODg5NzNhZGU5Y2FiNzc2M2M0YTU5ZjgyMTMwZDMifX19\n" +
-                            ChatColor.RED + "The second one is actually the Tag 'value' from 'properties' : it can be, for example, found in /give commands.");
+                            ChatColor.WHITE + "- " + ChatColor.GRAY + ChatColor.ITALIC + "https://textures.minecraft.net/texture/18813764b2abc94ec3c3bc67b9147c21be850cdf996679703157f4555997ea63\n" +
+                            ChatColor.WHITE + "- " + ChatColor.YELLOW + "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNWZiNzFlNzllZDVlOWRiYzUwNWY0N2RlMzQ0ZWFkZDk1ODg5NzNhZGU5Y2FiNzc2M2M0YTU5ZjgyMTMwZDMifX19\n \n" +
+                            logo + ChatColor.RED + "The second one is actually the Tag 'value' from 'properties' : it can be found in /give commands or in the 'for developers' section of a head on minecraft-heads.com.");
+                    return true;
                 }
             }
             case "delete" -> handleDeleteCommand(player, args);
@@ -187,8 +187,6 @@ public class CommandProcessor implements CommandExecutor {
             if (Arrays.asList(heads).contains(material)) {
                 ItemStack itemMaterial = material.asItemType().createItemStack();
                 String newID = UUID.randomUUID().toString();
-                Interaction interaction = player.getWorld().spawn(interactionLoc, Interaction.class);
-                ItemDisplay itemDisplay = player.getWorld().spawn(blockLoc.add(0.5,0.0, 0.5), ItemDisplay.class);
 
                 if (args.length > 2 && material.equals(Material.PLAYER_HEAD)) {
                     // set code to change itemMaterial into wanted head skin
@@ -197,6 +195,8 @@ public class CommandProcessor implements CommandExecutor {
                         SkullMeta meta = (SkullMeta) itemMaterial.getItemMeta();
                         meta.setOwnerProfile(profile);
                         itemMaterial.setItemMeta(meta);
+                    } else if (!args[2].isEmpty() && args[2].length() < 16) {
+                        //
                     } else {
                         URL urlFromBase64 = getUrlFromBase64(args[2]);
                         PlayerProfile profile = getProfile(urlFromBase64.toString());
@@ -206,6 +206,8 @@ public class CommandProcessor implements CommandExecutor {
                     }
                 }
 
+                Interaction interaction = player.getWorld().spawn(interactionLoc, Interaction.class);
+                ItemDisplay itemDisplay = player.getWorld().spawn(blockLoc.add(0.5,0.0, 0.5), ItemDisplay.class);
                 itemDisplay.setItemStack(itemMaterial);
                 itemDisplay.getPersistentDataContainer().set(blockKey, blockDataType, newID);
                 interaction.getPersistentDataContainer().set(blockKey, blockDataType, newID);
