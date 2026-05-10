@@ -2,6 +2,9 @@
 Edit block displays easily with custom tools !
 This plugin uses 1.20 block displays and interactions.
 
+# This project is paused. Don't expect updates any time soon.
+This project was my first attempt at doing a bigger plugin, but the structure is pretty bad and would need to be rewritten to maintain and update it in a clean way. It's also been more than a year that I don't have any more time or will to pursue this project.
+
 # Features
 ## Commands
 - /bde : get a list of every command
